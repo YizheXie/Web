@@ -1,0 +1,436 @@
+/* --- About页面区域基础样式 --- */
+.about-section {
+    background-color: var(--item_bg_color);
+    border-radius: 12px;
+    padding: 25px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.about-section:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* --- 页面头部 (头像, 姓名, 职位) --- */
+.about-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.about-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 25px;
+    border: 3px solid white;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.about-name {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--item_left_title_color);
+}
+
+.about-title {
+    font-size: 18px;
+    color: var(--purple_text_color);
+    font-weight: 500;
+}
+
+/* --- 个人简介文本 --- */
+.about-bio {
+    line-height: 1.8;
+    margin-bottom: 25px;
+    color: var(--main_text_color);
+}
+
+/* --- 通用区域标题 --- */
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--item_left_title_color);
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--purple_text_color);
+    display: inline-block;
+}
+
+/* --- 技能标签 --- */
+.skill-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.skill-tag {
+    background-color: var(--item_bg_color);
+    color: var(--main_text_color);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.skill-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    background-color: var(--purple_text_color);
+    color: white;
+}
+
+/* --- 时间线样式 (教育经历/荣誉奖项) --- */
+.timeline {
+    margin-top: 20px;
+    position: relative;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15px;
+    height: 100%;
+    width: 2px;
+    background: var(--purple_text_color);
+    opacity: 0.3;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 45px;
+    margin-bottom: 30px;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: 7px;
+    top: 5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--purple_text_color);
+    border: 3px solid white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.timeline-date {
+    font-size: 14px;
+    color: var(--item_left_text_color);
+    margin-bottom: 5px;
+}
+
+.timeline-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--item_left_title_color);
+    margin-bottom: 8px;
+}
+
+.timeline-content {
+    line-height: 1.6;
+    color: var(--main_text_color);
+}
+
+/* --- 暗黑模式适配 --- */
+html[data-theme="Dark"] .about-section {
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="Dark"] .about-avatar {
+    border-color: rgba(30, 32, 36, 0.8);
+}
+
+html[data-theme="Dark"] .skill-tag {
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="Dark"] .timeline::before {
+    background: var(--purple_text_color);
+}
+
+html[data-theme="Dark"] .timeline-dot {
+    border-color: rgba(30, 32, 36, 0.8);
+}
+
+/* --- 响应式设计 --- */
+@media (max-width: 800px) {
+    /* 在小屏幕上，头部信息垂直排列 */
+    .about-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .about-avatar {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }    
+}
+
+@media (max-width: 600px) {
+    .about-section {
+        padding: 20px 15px;
+    }
+}
+
+/* --- Publications/科研项目列表样式 --- */
+.publications-heading {
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--item_left_title_color);
+    margin: 15px 0;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.publications-heading:hover {
+    transform: translateY(-2px);
+}
+
+.publications-wrapper {
+    margin-bottom: 10px;
+}
+
+.publication-item {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-left: 3px solid var(--purple_text_color);
+    background-color: var(--item_bg_color);
+    border-radius: 0 5px 5px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.publication-item:hover {
+    transform: translateX(3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.publication-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: var(--main_text_color);
+}
+
+.publication-authors {
+    color: var(--secondary_text_color, #666);
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.publication-venue {
+    font-style: italic;
+    color: var(--secondary_text_color, #555);
+    font-size: 14px;
+}
+
+/* --- Publications/科研项目列表暗色主题 --- */
+html[data-theme="Dark"] .publications-heading {
+    color: #eee;
+}
+
+html[data-theme="Dark"] .publication-item {
+    background-color: #1e1e1e;
+    border-left-color: var(--purple_text_color);
+}
+
+html[data-theme="Dark"] .publication-title {
+    color: #eee;
+}
+
+html[data-theme="Dark"] .publication-authors,
+html[data-theme="Dark"] .publication-venue {
+    color: #bbb;
+} 
+
+/* --- 联系表单样式 --- */
+.contact-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--main_text_color);
+}
+
+.required {
+    color: #e74c3c;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: var(--item_bg_color);
+    color: var(--main_text_color);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--purple_text_color);
+    box-shadow: 0 0 0 3px rgba(128, 90, 213, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.error-message {
+    display: block;
+    color: #e74c3c;
+    font-size: 14px;
+    margin-top: 5px;
+    min-height: 18px;
+}
+
+.submit-btn {
+    background-color: var(--purple_text_color);
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.submit-btn:hover {
+    background-color: #6b46c1;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(128, 90, 213, 0.3);
+}
+
+.submit-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* --- 联系表单暗色主题 --- */
+html[data-theme="Dark"] .form-group input,
+html[data-theme="Dark"] .form-group textarea {
+    border-color: #444;
+    background-color: #1e1e1e;
+}
+
+html[data-theme="Dark"] .form-group input:focus,
+html[data-theme="Dark"] .form-group textarea:focus {
+    border-color: var(--purple_text_color);
+}
+
+/* --- 评论系统样式 --- */
+.article-content {
+    line-height: 1.8;
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #c3e6cb;
+}
+
+.error-messages {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #f5c6cb;
+}
+
+.comments-list {
+    margin-top: 30px;
+}
+
+.comment-item {
+    background-color: var(--item_bg_color);
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--purple_text_color);
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.comment-date {
+    color: var(--item_left_text_color);
+    font-size: 14px;
+}
+
+.comment-content {
+    color: var(--main_text_color);
+    line-height: 1.6;
+}
+
+.no-comments {
+    text-align: center;
+    color: var(--item_left_text_color);
+    font-style: italic;
+    padding: 20px;
+}
+
+.article-meta {
+    color: var(--item_left_text_color);
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+/* --- 评论系统暗色主题 --- */
+html[data-theme="Dark"] .success-message {
+    background-color: #1e3a2b;
+    color: #a3d9a5;
+    border-color: #2d5a3d;
+}
+
+html[data-theme="Dark"] .error-messages {
+    background-color: #3a1e20;
+    color: #d9a3a8;
+    border-color: #5a2d30;
+}
+
+html[data-theme="Dark"] .comment-item {
+    background-color: #1e1e1e;
+    border-left-color: var(--purple_text_color);
+}
