@@ -963,7 +963,7 @@ body {
 
 .activity-item:hover {
     background: #f8f9fa;
-    transform: translateX(3px);
+    /* transform: translateX(3px); */
 }
 
 .activity-item:last-child {
