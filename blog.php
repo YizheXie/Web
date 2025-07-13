@@ -1,17 +1,7 @@
 <?php
 require_once 'database.php';
-require_once 'site_config_helper.php';
 
 $db = Database::getInstance();
-
-// 获取网站配置
-$location = SiteConfigHelper::getLocation();
-$educationInfo = SiteConfigHelper::getEducationInfo();
-$email = SiteConfigHelper::getEmail();
-$githubUrl = SiteConfigHelper::getGithubUrl();
-$wechatQr = SiteConfigHelper::getWechatQr();
-$googleScholar = SiteConfigHelper::getGoogleScholar();
-$orcid = SiteConfigHelper::getOrcid();
 
 // 处理 AJAX 评论提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment']) && isset($_POST['ajax_request'])) {
@@ -82,7 +72,7 @@ $articleId = $_GET['id'] ?? null;
 $category = $_GET['category'] ?? '';
 $search = $_GET['search'] ?? '';
 $page = intval($_GET['page'] ?? 1);
-$limit = 6; // 每页显示6篇文章
+$limit = 4; // 每页显示4篇文章
 
 // 单个文章查看模式
 $singleArticleMode = !empty($articleId);
@@ -136,7 +126,7 @@ $currentCategory = $category ?: 'all';
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title><?php echo htmlspecialchars(SiteConfigHelper::getSiteTitle()); ?> - 博客</title>
+    <title>My Blog</title>
     <link rel="icon" href="./static/img/icon/icon-nav.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="./static/css/style.css">
@@ -162,7 +152,7 @@ $currentCategory = $category ?: 'all';
             <div class="nav-logo">
                 <a href="index.php">
                     <img src="./static/img/icon/icon-nav.png" alt="Logo">
-                    <span><?php echo htmlspecialchars(SiteConfigHelper::getWelcomeName()); ?></span>
+                    <span>Yizhe Xie</span>
                 </a>
             </div>
             <div class="nav-links">
@@ -200,7 +190,7 @@ $currentCategory = $category ?: 'all';
                             d="M512 39.152941c-216.847059 0-391.529412 174.682353-391.529412 391.529412 0 349.364706 391.529412 572.235294 391.529412 572.235294s391.529412-222.870588 391.529412-572.235294c0-216.847059-174.682353-391.529412-391.529412-391.529412z m0 891.482353C424.658824 873.411765 180.705882 686.682353 180.705882 430.682353c0-183.717647 147.576471-331.294118 331.294118-331.294118s331.294118 147.576471 331.294118 331.294118c0 256-243.952941 442.729412-331.294118 499.952941z"
                             p-id="1480"></path>
                     </svg>
-                    <?php echo htmlspecialchars($location); ?>
+                    China-Hainan
                 </div>
                 <div class="left-des-item">
                     <svg t="1705773906032" class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -209,14 +199,14 @@ $currentCategory = $category ?: 'all';
                             d="M729.6 234.666667H294.4V157.866667a51.2 51.2 0 0 1 51.2-51.2h332.8a51.2 51.2 0 0 1 51.2 51.2v76.8z m179.2 51.2a51.2 51.2 0 0 1 51.2 51.2v512a51.2 51.2 0 0 1-51.2 51.2H115.2a51.2 51.2 0 0 1-51.2-51.2v-512a51.2 51.2 0 0 1 51.2-51.2h793.557333z m-768 172.032c0 16.384 13.312 29.696 29.696 29.696h683.008a29.696 29.696 0 1 0 0-59.392H170.410667a29.696 29.696 0 0 0-29.696 29.696z m252.416 118.784c0 16.384 13.312 29.696 29.696 29.696h178.176a29.696 29.696 0 1 0 0-59.392H422.912a29.738667 29.738667 0 0 0-29.696 29.696z"
                             p-id="2475"></path>
                     </svg>
-                    <?php echo htmlspecialchars($educationInfo); ?>
+                    MUC & CityU MAC
                 </div>
             </div>
             <div class="left-div">
                 <div class="category-title">博客分类</div>
                 <div class="category-list">
                     <div><a href="blog.php" class="category-link <?php echo $currentCategory === 'all' ? 'active' : ''; ?>">全部文章<span
-                                class="category-count">(<?php echo $singleArticleMode ? $db->getArticleCount() : $totalArticles; ?>)</span></a></div>
+                                class="category-count">(<?php echo $db->getArticleCount(); ?>)</span></a></div>
                     <?php foreach ($categories as $cat): ?>
                     <div><a href="blog.php?category=<?php echo $cat['slug']; ?>" class="category-link <?php echo $currentCategory === $cat['slug'] ? 'active' : ''; ?>"><?php echo htmlspecialchars($cat['name']); ?><span
                                 class="category-count">(<?php echo $cat['article_count']; ?>)</span></a></div>
@@ -332,7 +322,7 @@ $currentCategory = $category ?: 'all';
                     </div>
                     <div class="mobile-category-dropdown">
                         <div><a href="blog.php" class="category-link <?php echo $currentCategory === 'all' ? 'active' : ''; ?>">全部文章<span
-                                    class="category-count">(<?php echo $singleArticleMode ? $db->getArticleCount() : $totalArticles; ?>)</span></a></div>
+                                    class="category-count">(<?php echo $db->getArticleCount(); ?>)</span></a></div>
                         <?php foreach ($categories as $cat): ?>
                         <div><a href="blog.php?category=<?php echo $cat['slug']; ?>" class="category-link <?php echo $currentCategory === $cat['slug'] ? 'active' : ''; ?>"><?php echo htmlspecialchars($cat['name']); ?><span
                                     class="category-count">(<?php echo $cat['article_count']; ?>)</span></a></div>
@@ -360,8 +350,13 @@ $currentCategory = $category ?: 'all';
                             <?php endif; ?>
                             <span class="blog-views">👁 浏览 <?php echo $singleArticle['view_count'] ?? 0; ?> 次</span>
                         </div>
+                        <?php if (isset($singleArticle['is_ai_generated']) && $singleArticle['is_ai_generated']): ?>
+                        <div class="notice-box info-box ai-notice">
+                            ⚠️ 本文由 AI 生成，请注意甄别信息的准确性
+                        </div>
+                        <?php endif; ?>
                         <div class="blog-content">
-                            <?php echo nl2br(htmlspecialchars($singleArticle['content'])); ?>
+                            <?php echo Database::parseMarkdown($singleArticle['content']); ?>
                         </div>
                         <div class="blog-actions-inline">
                             <a href="blog.php" class="btn-inline btn-primary">返回博客列表</a>
@@ -529,8 +524,13 @@ $currentCategory = $category ?: 'all';
                             <?php endforeach; ?>
                             <?php endif; ?>
                         </div>
+                        <?php if (isset($article['is_ai_generated']) && $article['is_ai_generated']): ?>
+                        <div class="notice-box info-box">
+                            ⚠️ 本文由 AI 生成，请注意甄别信息的准确性
+                        </div>
+                        <?php endif; ?>
                         <div class="blog-content">
-                            <?php echo nl2br(htmlspecialchars($article['content'])); ?>
+                            <?php echo Database::parseMarkdown($article['content']); ?>
                         </div>
                         <a href="blog.php?id=<?php echo $article['id']; ?>" class="blog-more">阅读全文</a>
                     </article>
@@ -567,11 +567,12 @@ $currentCategory = $category ?: 'all';
                 </div>
 
                 <!-- 分页 -->
-                <?php if ($totalPages > 1): ?>
+                <?php if ($totalPages >= 1): ?>
                 <div class="pagination">
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                     <a href="blog.php?page=<?php echo $i; ?><?php echo $category ? '&category=' . $category : ''; ?><?php echo $search ? '&search=' . urlencode($search) : ''; ?>" 
-                       class="<?php echo $i == $page ? 'active' : ''; ?>"><?php echo $i; ?></a>
+                       class="pagination-number <?php echo $i == $page ? 'active' : ''; ?>"
+                       data-page="<?php echo $i; ?>"><?php echo $i; ?></a>
                     <?php endfor; ?>
                 </div>
                 <?php endif; ?>
@@ -621,12 +622,11 @@ $currentCategory = $category ?: 'all';
 
     <!-- 尾注 -->
     <footer>
-        <?php echo htmlspecialchars(SiteConfigHelper::getFooterText()); ?>
+        Yizhe Xie &copy; 2025 | ID: 23160151
     </footer>
 
     <script src="./static/js/script.js"></script>
     <script src="./static/js/comments.js"></script>
-    <script src="./static/js/quotes.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>

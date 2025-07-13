@@ -1,21 +1,10 @@
 <?php
 require_once 'database.php';
-require_once 'site_config_helper.php';
 
 // 获取推荐内容
 $db = Database::getInstance();
 $learningResources = $db->getRecommendationsByCategory('学习资源');
 $toolRecommendations = $db->getRecommendationsByCategory('工具推荐');
-
-// 获取网站配置
-$location = SiteConfigHelper::getLocation();
-$educationInfo = SiteConfigHelper::getEducationInfo();
-$email = SiteConfigHelper::getEmail();
-$githubUrl = SiteConfigHelper::getGithubUrl();
-$wechatQr = SiteConfigHelper::getWechatQr();
-$googleScholar = SiteConfigHelper::getGoogleScholar();
-$orcid = SiteConfigHelper::getOrcid();
-$dailyQuotes = SiteConfigHelper::getDailyQuotes();
 ?>
 <!DOCTYPE html>
 <html>
@@ -23,7 +12,7 @@ $dailyQuotes = SiteConfigHelper::getDailyQuotes();
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title><?php echo htmlspecialchars(SiteConfigHelper::getSiteTitle()); ?> - 推荐阅读</title>
+    <title>推荐阅读</title>
     <link rel="icon" href="./static/img/icon/icon-nav.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="./static/css/style.css">
@@ -43,7 +32,7 @@ $dailyQuotes = SiteConfigHelper::getDailyQuotes();
             <div class="nav-logo">
                 <a href="index.php">
                     <img src="./static/img/icon/icon-nav.png" alt="Logo">
-                    <span><?php echo htmlspecialchars(SiteConfigHelper::getWelcomeName()); ?></span>
+                    <span>Yizhe Xie</span>
                 </a>
             </div>
             <div class="nav-links">
@@ -81,7 +70,7 @@ $dailyQuotes = SiteConfigHelper::getDailyQuotes();
                             d="M512 39.152941c-216.847059 0-391.529412 174.682353-391.529412 391.529412 0 349.364706 391.529412 572.235294 391.529412 572.235294s391.529412-222.870588 391.529412-572.235294c0-216.847059-174.682353-391.529412-391.529412-391.529412z m0 891.482353C424.658824 873.411765 180.705882 686.682353 180.705882 430.682353c0-183.717647 147.576471-331.294118 331.294118-331.294118s331.294118 147.576471 331.294118 331.294118c0 256-243.952941 442.729412-331.294118 499.952941z"
                             p-id="1480"></path>
                     </svg>
-                    <?php echo htmlspecialchars($location); ?>
+                    China-Hainan
                 </div>
                 <div class="left-des-item">
                     <svg t="1705773906032" class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -90,7 +79,7 @@ $dailyQuotes = SiteConfigHelper::getDailyQuotes();
                             d="M729.6 234.666667H294.4V157.866667a51.2 51.2 0 0 1 51.2-51.2h332.8a51.2 51.2 0 0 1 51.2 51.2v76.8z m179.2 51.2a51.2 51.2 0 0 1 51.2 51.2v512a51.2 51.2 0 0 1-51.2 51.2H115.2a51.2 51.2 0 0 1-51.2-51.2v-512a51.2 51.2 0 0 1 51.2-51.2h793.557333z m-768 172.032c0 16.384 13.312 29.696 29.696 29.696h683.008a29.696 29.696 0 1 0 0-59.392H170.410667a29.696 29.696 0 0 0-29.696 29.696z m252.416 118.784c0 16.384 13.312 29.696 29.696 29.696h178.176a29.696 29.696 0 1 0 0-59.392H422.912a29.738667 29.738667 0 0 0-29.696 29.696z"
                             p-id="2475"></path>
                     </svg>
-                    <?php echo htmlspecialchars($educationInfo); ?>
+                    MUC & CityU MAC
                 </div>
             </div>
             <!-- 随机名言区域 -->
@@ -125,7 +114,7 @@ $dailyQuotes = SiteConfigHelper::getDailyQuotes();
                                 p-id="1491"></path>
                         </svg>
                         <div class="iconTip">Home</div>
-                    </a><a class="iconItem" href="<?php echo htmlspecialchars($githubUrl); ?>">
+                    </a><a class="iconItem" href="#">
                         <svg t="1704870335945" class="icon" viewBox="0 0 1024 1024" version="1.1"
                             xmlns="http://www.w3.org/2000/svg" p-id="2487">
                             <path
@@ -133,7 +122,7 @@ $dailyQuotes = SiteConfigHelper::getDailyQuotes();
                                 p-id="2488"></path>
                         </svg>
                         <div class="iconTip">Github</div>
-                    </a><a class="iconItem" href="mailto:<?php echo htmlspecialchars($email); ?>">
+                    </a><a class="iconItem" href="mailto:xieyizhe66@gmail.com">
                         <svg t="1704870588438" class="icon" viewBox="0 0 1024 1024" version="1.1"
                             xmlns="http://www.w3.org/2000/svg" p-id="3174">
                             <path
@@ -248,7 +237,7 @@ $dailyQuotes = SiteConfigHelper::getDailyQuotes();
 
     <!-- 尾注 -->
     <footer>
-        <?php echo htmlspecialchars(SiteConfigHelper::getFooterText()); ?>
+        Yizhe Xie &copy; 2025 | ID: 23160151
     </footer>
 
     <div class="tc">
@@ -258,7 +247,6 @@ $dailyQuotes = SiteConfigHelper::getDailyQuotes();
     </div>
 
     <script src="./static/js/script.js"></script>
-    <script src="./static/js/quotes.js"></script>
 </body>
 
 </html> 

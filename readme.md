@@ -1,7 +1,5 @@
 # Homepage - 个人网站项目
 
-> Test
-
 ## 项目概述
 
 这是一个功能完整的个人网站项目，包含前端展示和后台管理系统。项目采用 HTML5、CSS3、JavaScript 和 PHP+MySQL 技术栈开发。
@@ -107,7 +105,7 @@ rm setup_admin.php
 - **文章详情**: `article.php?id=文章ID`
 
 ### 后台管理
-1. **登录**: 访问 `login.php`
+1. **登录**: 访问 `admin/login.php`
    - 用户名: `admin`
    - 密码: `admin123`
 
@@ -125,8 +123,9 @@ Homepage/
 ├── about.html                # 关于页面
 ├── blog.html                 # 博客页面
 ├── article.php               # 文章详情页
-├── login.php                 # 管理员登录页
-├── admin.php                 # 后台管理主页
+├── admin/                    # 管理员后台系统
+│   ├── login.php            # 管理员登录页
+│   └── admin.php            # 后台管理主页
 ├── config.php                # 数据库配置
 ├── database.php              # 数据库类
 ├── contact_handler.php       # 联系表单处理

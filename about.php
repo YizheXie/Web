@@ -1,104 +1,10 @@
-<?php
-require_once 'database.php';
-require_once 'site_config_helper.php';
-$db = Database::getInstance();
-
-// 获取网站配置
-$location = SiteConfigHelper::getLocation();
-$educationInfo = SiteConfigHelper::getEducationInfo();
-$email = SiteConfigHelper::getEmail();
-$githubUrl = SiteConfigHelper::getGithubUrl();
-$wechatQr = SiteConfigHelper::getWechatQr();
-$googleScholar = SiteConfigHelper::getGoogleScholar();
-$orcid = SiteConfigHelper::getOrcid();
-
-// 获取关于我信息
-$aboutInfo = [];
-$allAboutInfo = $db->getAllAboutInfo();
-foreach ($allAboutInfo as $info) {
-    if ($info['is_active']) {
-        $aboutInfo[$info['section_key']] = $info['content'];
-    }
-}
-
-// 处理特殊格式的内容
-function processAboutContent($content, $type) {
-    switch ($type) {
-        case 'json':
-            return json_decode($content, true);
-        case 'html':
-            return $content;
-        default:
-            return $content;
-    }
-}
-
-// 获取特定信息，如果不存在则返回默认值
-function getAboutInfo($key, $default = '') {
-    global $aboutInfo;
-    return isset($aboutInfo[$key]) ? $aboutInfo[$key] : $default;
-}
-
-// 处理技能标签
-$skills = [];
-$skillsContent = getAboutInfo('skills', '');
-if ($skillsContent) {
-    $skills = array_map('trim', explode(',', $skillsContent));
-}
-
-// 处理教育经历
-$education = [];
-$educationContent = getAboutInfo('education', '');
-if ($educationContent) {
-    $parts = explode('|', $educationContent);
-    if (count($parts) >= 3) {
-        $education = [
-            'period' => $parts[0],
-            'school' => $parts[1],
-            'description' => $parts[2]
-        ];
-    }
-}
-
-// 处理科研项目
-$publications = [];
-$publicationsContent = getAboutInfo('publications', '');
-if ($publicationsContent) {
-    $pubItems = explode(';', $publicationsContent);
-    foreach ($pubItems as $item) {
-        $parts = explode('|', $item);
-        if (count($parts) >= 4) {
-            $publications[] = [
-                'title' => $parts[0],
-                'authors' => $parts[1],
-                'venue' => $parts[2],
-                'url' => $parts[3]
-            ];
-        }
-    }
-}
-
-// 处理荣誉奖项
-$awards = [];
-$awardsContent = getAboutInfo('awards', '');
-if ($awardsContent) {
-    $parts = explode('|', $awardsContent);
-    if (count($parts) >= 3) {
-        $awards = [
-            'period' => $parts[0],
-            'title' => $parts[1],
-            'description' => $parts[2]
-        ];
-    }
-}
-?>
 <!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title><?php echo htmlspecialchars(SiteConfigHelper::getSiteTitle()); ?> - 关于我</title>
+    <title>关于我</title>
     <link rel="icon" href="./static/img/icon/icon-nav.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="./static/css/style.css">
@@ -119,7 +25,7 @@ if ($awardsContent) {
             <div class="nav-logo">
                 <a href="index.php">
                     <img src="./static/img/icon/icon-nav.png" alt="Logo">
-                    <span><?php echo htmlspecialchars(SiteConfigHelper::getWelcomeName()); ?></span>
+                    <span>Yizhe Xie</span>
                 </a>
             </div>
             <div class="nav-links">
@@ -157,7 +63,7 @@ if ($awardsContent) {
                             d="M512 39.152941c-216.847059 0-391.529412 174.682353-391.529412 391.529412 0 349.364706 391.529412 572.235294 391.529412 572.235294s391.529412-222.870588 391.529412-572.235294c0-216.847059-174.682353-391.529412-391.529412-391.529412z m0 891.482353C424.658824 873.411765 180.705882 686.682353 180.705882 430.682353c0-183.717647 147.576471-331.294118 331.294118-331.294118s331.294118 147.576471 331.294118 331.294118c0 256-243.952941 442.729412-331.294118 499.952941z"
                             p-id="1480"></path>
                     </svg>
-                    <?php echo htmlspecialchars($location); ?>
+                    China-Hainan
                 </div>
                 <div class="left-des-item">
                     <svg t="1705773906032" class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -166,7 +72,7 @@ if ($awardsContent) {
                             d="M729.6 234.666667H294.4V157.866667a51.2 51.2 0 0 1 51.2-51.2h332.8a51.2 51.2 0 0 1 51.2 51.2v76.8z m179.2 51.2a51.2 51.2 0 0 1 51.2 51.2v512a51.2 51.2 0 0 1-51.2 51.2H115.2a51.2 51.2 0 0 1-51.2-51.2v-512a51.2 51.2 0 0 1 51.2-51.2h793.557333z m-768 172.032c0 16.384 13.312 29.696 29.696 29.696h683.008a29.696 29.696 0 1 0 0-59.392H170.410667a29.696 29.696 0 0 0-29.696 29.696z m252.416 118.784c0 16.384 13.312 29.696 29.696 29.696h178.176a29.696 29.696 0 1 0 0-59.392H422.912a29.738667 29.738667 0 0 0-29.696 29.696z"
                             p-id="2475"></path>
                     </svg>
-                    <?php echo htmlspecialchars($educationInfo); ?>
+                    MUC & CityU MAC
                 </div>
             </div>
             <!-- 随机名言区域 -->
@@ -201,7 +107,7 @@ if ($awardsContent) {
                                 p-id="1491"></path>
                         </svg>
                         <div class="iconTip">Home</div>
-                    </a><a class="iconItem" href="<?php echo htmlspecialchars($githubUrl); ?>">
+                    </a><a class="iconItem" href="#">
                         <svg t="1704870335945" class="icon" viewBox="0 0 1024 1024" version="1.1"
                             xmlns="http://www.w3.org/2000/svg" p-id="2487">
                             <path
@@ -209,7 +115,7 @@ if ($awardsContent) {
                                 p-id="2488"></path>
                         </svg>
                         <div class="iconTip">Github</div>
-                    </a><a class="iconItem" href="mailto:<?php echo htmlspecialchars($email); ?>">
+                    </a><a class="iconItem" href="mailto:xieyizhe66@gmail.com">
                         <svg t="1704870588438" class="icon" viewBox="0 0 1024 1024" version="1.1"
                             xmlns="http://www.w3.org/2000/svg" p-id="3174">
                             <path
@@ -234,34 +140,28 @@ if ($awardsContent) {
                 <!-- 个人简介部分 -->
                 <div class="about-section">
                     <div class="about-header">
-                        <img src="<?php echo htmlspecialchars(getAboutInfo('avatar', './static/img/selfie.jpg')); ?>" alt="个人头像" class="about-avatar">
+                        <img src="./static/img/selfie.jpg" alt="个人头像" class="about-avatar">
                         <div>
-                            <div class="about-name"><?php echo htmlspecialchars(getAboutInfo('name', '您的姓名 (Your Name)')); ?></div>
-                            <div class="about-title"><?php echo htmlspecialchars(getAboutInfo('title', '您的职位/身份描述')); ?></div>
+                            <div class="about-name">谢奕哲 (Yizhe Xie)</div>
+                            <div class="about-title">摸鱼躺平学博士在读</div>
                         </div>
                     </div>
 
                     <div class="about-bio">
-                        <?php echo htmlspecialchars(getAboutInfo('bio', '嗨，我是[您的姓名]🤗，[您的学校/公司]的[您的专业/职位]。我的研究兴趣包括[研究领域1]、[研究领域2]和[研究领域3]。我喜欢业余时间在[平台1]、[平台2]和[平台3]等平台分享见解或捣鼓些奇奇怪怪的项目。')); ?>
-                    </div>
+                            嗨，我是谢奕哲🤗，中央民族大学与澳门城市大学数据科学与大数据技术专业的大二牲。我的研究兴趣包括大模型安全、多智能体和深度强化学习。我喜欢业余时间在知乎、CSDN和GitHub等平台分享见解或捣鼓些奇奇怪怪的项目。
+                        </div>
 
                     <div class="section-title">技能</div>
                     <div class="skill-container">
-                        <?php if (!empty($skills)): ?>
-                            <?php foreach ($skills as $skill): ?>
-                                <span class="skill-tag"><?php echo htmlspecialchars($skill); ?></span>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <span class="skill-tag">技能1</span>
-                            <span class="skill-tag">技能2</span>
-                            <span class="skill-tag">技能3</span>
-                            <span class="skill-tag">技能4</span>
-                            <span class="skill-tag">技能5</span>
-                            <span class="skill-tag">技能6</span>
-                            <span class="skill-tag">技能7</span>
-                            <span class="skill-tag">技能8</span>
-                            <span class="skill-tag">技能9</span>
-                        <?php endif; ?>
+                        <span class="skill-tag">深度学习</span>
+                        <span class="skill-tag">强化学习</span>
+                        <span class="skill-tag">大型语言模型</span>
+                        <span class="skill-tag">多智能体学习</span>
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">数据分析</span>
+                        <span class="skill-tag">机器学习</span>
+                        <span class="skill-tag">LLM安全</span>
+                        <span class="skill-tag">LLM-MA</span>
                     </div>
                 </div>
 
@@ -269,25 +169,14 @@ if ($awardsContent) {
                 <div class="about-section">
                     <div class="section-title">教育经历</div>
                     <div class="timeline">
-                        <?php if (!empty($education)): ?>
                         <div class="timeline-item">
                             <div class="timeline-dot"></div>
-                            <div class="timeline-date"><?php echo htmlspecialchars($education['period']); ?></div>
-                            <div class="timeline-title"><?php echo htmlspecialchars($education['school']); ?></div>
+                            <div class="timeline-date">2023 - 至今</div>
+                            <div class="timeline-title">中央民族大学 & 澳门城市大学</div>
                             <div class="timeline-content">
-                                <?php echo htmlspecialchars($education['description']); ?>
+                                数据科学与大数据技术专业双学位项目。研究方向包括大模型安全、大模型多智能体等。
                             </div>
                         </div>
-                        <?php else: ?>
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-date">[开始年份] - [结束年份/至今]</div>
-                            <div class="timeline-title">[学校名称]</div>
-                            <div class="timeline-content">
-                                [专业名称]专业。[研究方向描述]。
-                            </div>
-                        </div>
-                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -297,51 +186,30 @@ if ($awardsContent) {
                     <div class="publications-wrapper">
                         <span class="publications-heading">😊 Publications</span>
                     </div>
-                    <?php if (!empty($publications)): ?>
-                        <?php foreach ($publications as $publication): ?>
-                        <div class="publication-item">
-                            <div class="publication-title"><a href="<?php echo htmlspecialchars($publication['url']); ?>" target="_blank"><?php echo htmlspecialchars($publication['title']); ?></a></div>
-                            <div class="publication-authors"><?php echo htmlspecialchars($publication['authors']); ?></div>
-                            <div class="publication-venue"><?php echo htmlspecialchars($publication['venue']); ?></div>
-                        </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
                     <div class="publication-item">
-                        <div class="publication-title"><a href="[论文链接]" target="_blank">[论文标题1]</a></div>
-                        <div class="publication-authors">[作者列表1]</div>
-                        <div class="publication-venue">[会议/期刊名称1]</div>
+                        <div class="publication-title"><a href="https://link.springer.com/chapter/10.1007/978-981-96-1545-2_14" target="_blank">Dynamic Privacy Protection with Large Language Model in Social Networks </a></div>
+                        <div class="publication-authors">Yizhe Xie, Congcong Zhu*, Xinyue Zhang, Xiangyu Hu and Xuan Liu</div>
+                        <div class="publication-venue">ICA3PP 2024</div>
                     </div>
                     <div class="publication-item">
-                        <div class="publication-title"><a href="[论文链接]" target="_blank">[论文标题2]</a></div>
-                        <div class="publication-authors">[作者列表2]</div>
-                        <div class="publication-venue">[会议/期刊名称2]</div>
+                        <div class="publication-title"><a href="https://arxiv.org/abs/2507.04724" target="_blank">Who's the Mole? Modeling and Detecting Intention-Hiding Malicious Agents in LLM-Based Multi-Agent Systems</a></div>
+                        <div class="publication-authors">Yizhe Xie, Congcong Zhu, Xinyue Zhang, Minghao Wang, Chi Liu, Minglu Zhu, Tianqing Zhu</div>
+                        <div class="publication-venue">preprint (arXiv 2025)</div>
                     </div>
-                    <?php endif; ?>
                 </div>
 
                 <!-- 荣誉奖项部分 -->
                 <div class="about-section">
                     <div class="section-title">荣誉奖项</div>
                     <div class="timeline">
-                        <?php if (!empty($awards)): ?>
                         <div class="timeline-item">
                             <div class="timeline-dot"></div>
-                            <div class="timeline-date"><?php echo htmlspecialchars($awards['period']); ?></div>
-                            <div class="timeline-title"><?php echo htmlspecialchars($awards['title']); ?></div>
+                            <div class="timeline-date">2023-2024</div>
+                            <div class="timeline-title">国家奖学金</div>
                             <div class="timeline-content">
-                                <?php echo htmlspecialchars($awards['description']); ?>
+                                获得2023至2024学年度本科生国家奖学金。
                             </div>
                         </div>
-                        <?php else: ?>
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-date">[获奖年份]</div>
-                            <div class="timeline-title">[奖项名称]</div>
-                            <div class="timeline-content">
-                                [奖项描述]。
-                            </div>
-                        </div>
-                        <?php endif; ?>
                     </div>
                 </div>
             </main>
@@ -350,7 +218,7 @@ if ($awardsContent) {
 
     <!-- 尾注 -->
     <footer>
-        <?php echo htmlspecialchars(SiteConfigHelper::getFooterText()); ?>
+        Yizhe Xie &copy; 2025 | ID: 23160151
     </footer>
 
     <div class="tc">
@@ -360,7 +228,6 @@ if ($awardsContent) {
     </div>
 
     <script src="./static/js/script.js"></script>
-    <script src="./static/js/quotes.js"></script>
 </body>
 
 </html> 

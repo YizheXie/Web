@@ -26,6 +26,111 @@ body {
     min-height: 100vh;
 }
 
+/* --- 提示框样式 --- */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification-success {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    color: white;
+}
+
+.notification-error {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+    color: white;
+}
+
+.notification-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.notification-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+/* --- 信息提示框样式 --- */
+.alert-info {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border-left: 4px solid #2196f3;
+}
+
+.alert-info-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-info-icon {
+    font-size: 16px;
+    color: #1976d2;
+}
+
+.alert-info-text {
+    color: #1976d2;
+    font-size: 16px;
+}
+
 /* --- 头部样式 (sticky定位) --- */
 .header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -63,7 +168,7 @@ body {
     background: rgba(255, 255, 255, 0.2);
     border: none;
     color: white;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.8rem;
     border-radius: 25px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -285,6 +390,21 @@ body {
     transform: translateY(0);
 }
 
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #ccc !important;
+    border-color: #ccc !important;
+    color: #666 !important;
+}
+
+.btn:disabled:hover {
+    background: #ccc !important;
+    border-color: #ccc !important;
+    color: #666 !important;
+    transform: none;
+}
+
 /* --- 状态标签 --- */
 .status-badge {
     padding: 0.4rem 0.8rem;
@@ -323,6 +443,21 @@ body {
 .status-read {
     background: linear-gradient(135deg, #e2e3e5 0%, #d1d3d4 100%);
     color: #495057;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+}
+
+.status-inactive {
+    background: linear-gradient(135deg, #e2e3e5 0%, #d1d3d4 100%);
+    color: #495057;
+}
+
+.status-deleted {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
 }
 
 /* --- 表单样式 --- */

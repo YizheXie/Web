@@ -276,9 +276,9 @@ class Database {
         return $stmt->execute();
     }
     
-    // 创建文章（包含标签、封面图片、推荐状态）
-    public function createArticleWithExtras($title, $content, $excerpt, $categoryId, $authorId, $status = 'draft', $tags = '', $featuredImage = '', $isFeatured = 0) {
-        $sql = "INSERT INTO articles (title, content, excerpt, category_id, author_id, status, tags, featured_image, is_featured) VALUES (:title, :content, :excerpt, :category_id, :author_id, :status, :tags, :featured_image, :is_featured)";
+    // 创建文章（包含标签、封面图片、推荐状态、AI生成标记）
+    public function createArticleWithExtras($title, $content, $excerpt, $categoryId, $authorId, $status = 'draft', $tags = '', $featuredImage = '', $isFeatured = 0, $isAiGenerated = 0) {
+        $sql = "INSERT INTO articles (title, content, excerpt, category_id, author_id, status, tags, featured_image, is_featured, is_ai_generated) VALUES (:title, :content, :excerpt, :category_id, :author_id, :status, :tags, :featured_image, :is_featured, :is_ai_generated)";
         $stmt = $this->connection->prepare($sql);
         
         $stmt->bindParam(':title', $title);
@@ -290,6 +290,7 @@ class Database {
         $stmt->bindParam(':tags', $tags);
         $stmt->bindParam(':featured_image', $featuredImage);
         $stmt->bindParam(':is_featured', $isFeatured, PDO::PARAM_INT);
+        $stmt->bindParam(':is_ai_generated', $isAiGenerated, PDO::PARAM_INT);
         
         return $stmt->execute();
     }
@@ -309,9 +310,9 @@ class Database {
         return $stmt->execute();
     }
     
-    // 更新文章（包含标签、封面图片、推荐状态）
-    public function updateArticleWithExtras($id, $title, $content, $excerpt, $categoryId, $status, $tags = '', $featuredImage = '', $isFeatured = 0) {
-        $sql = "UPDATE articles SET title = :title, content = :content, excerpt = :excerpt, category_id = :category_id, status = :status, tags = :tags, featured_image = :featured_image, is_featured = :is_featured WHERE id = :id";
+    // 更新文章（包含标签、封面图片、推荐状态、AI生成标记）
+    public function updateArticleWithExtras($id, $title, $content, $excerpt, $categoryId, $status, $tags = '', $featuredImage = '', $isFeatured = 0, $isAiGenerated = 0) {
+        $sql = "UPDATE articles SET title = :title, content = :content, excerpt = :excerpt, category_id = :category_id, status = :status, tags = :tags, featured_image = :featured_image, is_featured = :is_featured, is_ai_generated = :is_ai_generated WHERE id = :id";
         $stmt = $this->connection->prepare($sql);
         
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
@@ -323,6 +324,7 @@ class Database {
         $stmt->bindParam(':tags', $tags);
         $stmt->bindParam(':featured_image', $featuredImage);
         $stmt->bindParam(':is_featured', $isFeatured, PDO::PARAM_INT);
+        $stmt->bindParam(':is_ai_generated', $isAiGenerated, PDO::PARAM_INT);
         
         return $stmt->execute();
     }
@@ -538,6 +540,14 @@ class Database {
         $stmt->bindParam(':featured', $featured, PDO::PARAM_BOOL);
         
         return $stmt->execute();
+    }
+    
+    // 获取推荐文章数量
+    public function getFeaturedArticleCount() {
+        $sql = "SELECT COUNT(*) FROM articles WHERE is_featured = 1";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchColumn();
     }
     
     // 获取单个文章（支持ID查询）
@@ -815,147 +825,6 @@ class Database {
         return $stmt->fetch();
     }
     
-    // ===== 关于我信息管理 =====
-    
-    // 获取所有关于我信息
-    public function getAllAboutInfo() {
-        $sql = "SELECT * FROM about_info ORDER BY sort_order ASC, id ASC";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll();
-    }
-    
-    // 获取单个关于我信息
-    public function getAboutInfo($id) {
-        $sql = "SELECT * FROM about_info WHERE id = :id";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetch();
-    }
-    
-    // 根据键名获取关于我信息
-    public function getAboutInfoByKey($key) {
-        $sql = "SELECT * FROM about_info WHERE section_key = :key AND is_active = 1";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':key', $key);
-        $stmt->execute();
-        return $stmt->fetch();
-    }
-    
-    // 更新关于我信息
-    public function updateAboutInfo($id, $sectionName, $sectionKey, $content, $contentType = 'text', $sortOrder = 0, $isActive = true) {
-        $sql = "UPDATE about_info SET section_name = :section_name, section_key = :section_key, 
-                content = :content, content_type = :content_type, sort_order = :sort_order, is_active = :is_active 
-                WHERE id = :id";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        $stmt->bindValue(':section_name', $sectionName);
-        $stmt->bindValue(':section_key', $sectionKey);
-        $stmt->bindValue(':content', $content);
-        $stmt->bindValue(':content_type', $contentType);
-        $stmt->bindValue(':sort_order', $sortOrder, PDO::PARAM_INT);
-        $stmt->bindValue(':is_active', $isActive, PDO::PARAM_BOOL);
-        return $stmt->execute();
-    }
-    
-    // 创建关于我信息
-    public function createAboutInfo($sectionName, $sectionKey, $content, $contentType = 'text', $sortOrder = 0, $isActive = true) {
-        $sql = "INSERT INTO about_info (section_name, section_key, content, content_type, sort_order, is_active) 
-                VALUES (:section_name, :section_key, :content, :content_type, :sort_order, :is_active)";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':section_name', $sectionName);
-        $stmt->bindValue(':section_key', $sectionKey);
-        $stmt->bindValue(':content', $content);
-        $stmt->bindValue(':content_type', $contentType);
-        $stmt->bindValue(':sort_order', $sortOrder, PDO::PARAM_INT);
-        $stmt->bindValue(':is_active', $isActive, PDO::PARAM_BOOL);
-        return $stmt->execute();
-    }
-    
-    // 删除关于我信息
-    public function deleteAboutInfo($id) {
-        $sql = "DELETE FROM about_info WHERE id = :id";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        return $stmt->execute();
-    }
-    
-    // 切换关于我信息状态
-    public function toggleAboutInfoStatus($id, $isActive) {
-        $sql = "UPDATE about_info SET is_active = :is_active WHERE id = :id";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        $stmt->bindValue(':is_active', $isActive, PDO::PARAM_BOOL);
-        return $stmt->execute();
-    }
-    
-    // ===== 网站配置管理 =====
-    
-    // 获取所有网站配置
-    public function getAllSiteConfig() {
-        $sql = "SELECT * FROM site_config ORDER BY sort_order ASC, id ASC";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll();
-    }
-    
-    // 获取单个网站配置
-    public function getSiteConfig($id) {
-        $sql = "SELECT * FROM site_config WHERE id = :id";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetch();
-    }
-    
-    // 根据键名获取网站配置
-    public function getSiteConfigByKey($key) {
-        $sql = "SELECT * FROM site_config WHERE config_key = :key";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':key', $key);
-        $stmt->execute();
-        return $stmt->fetch();
-    }
-    
-    // 更新网站配置
-    public function updateSiteConfig($id, $configKey, $configValue, $configType = 'text', $description = '', $sortOrder = 0) {
-        $sql = "UPDATE site_config SET config_key = :config_key, config_value = :config_value, 
-                config_type = :config_type, description = :description, sort_order = :sort_order 
-                WHERE id = :id";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        $stmt->bindValue(':config_key', $configKey);
-        $stmt->bindValue(':config_value', $configValue);
-        $stmt->bindValue(':config_type', $configType);
-        $stmt->bindValue(':description', $description);
-        $stmt->bindValue(':sort_order', $sortOrder, PDO::PARAM_INT);
-        return $stmt->execute();
-    }
-    
-    // 创建网站配置
-    public function createSiteConfig($configKey, $configValue, $configType = 'text', $description = '', $sortOrder = 0) {
-        $sql = "INSERT INTO site_config (config_key, config_value, config_type, description, sort_order) 
-                VALUES (:config_key, :config_value, :config_type, :description, :sort_order)";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':config_key', $configKey);
-        $stmt->bindValue(':config_value', $configValue);
-        $stmt->bindValue(':config_type', $configType);
-        $stmt->bindValue(':description', $description);
-        $stmt->bindValue(':sort_order', $sortOrder, PDO::PARAM_INT);
-        return $stmt->execute();
-    }
-    
-    // 删除网站配置
-    public function deleteSiteConfig($id) {
-        $sql = "DELETE FROM site_config WHERE id = :id";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        return $stmt->execute();
-    }
-    
-    // ===== 活动日志相关方法 =====
-    
     // 活动日志相关方法
     public function logActivity($type, $action, $itemId, $itemTitle, $details = '', $adminId = null) {
         $sql = "INSERT INTO activity_logs (type, action, item_id, item_title, details, admin_id) 
@@ -968,6 +837,75 @@ class Database {
         $stmt->bindValue(':details', $details);
         $stmt->bindValue(':admin_id', $adminId, PDO::PARAM_INT);
         return $stmt->execute();
+    }
+    
+    // 简单的Markdown解析函数
+    public static function parseMarkdown($text) {
+        if (empty($text)) return '';
+        
+        // 转义HTML特殊字符
+        $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+        
+        // 处理代码块 ```
+        $text = preg_replace_callback('/```(\w+)?\n(.*?)\n```/s', function($matches) {
+            $language = !empty($matches[1]) ? htmlspecialchars($matches[1]) : '';
+            $code = htmlspecialchars($matches[2]);
+            return '<pre class="line-numbers"><code class="language-' . $language . '">' . $code . '</code></pre>';
+        }, $text);
+        
+        // 处理行内代码 `code`
+        $text = preg_replace('/`([^`]+)`/', '<code class="inline-code">$1</code>', $text);
+        
+        // 处理标题 (## 或 ### )
+        $text = preg_replace('/^### (.+)$/m', '<h3>$1</h3>', $text);
+        $text = preg_replace('/^## (.+)$/m', '<h2>$1</h2>', $text);
+        $text = preg_replace('/^# (.+)$/m', '<h1>$1</h1>', $text);
+        
+        // 处理粗体 **text**
+        $text = preg_replace('/\*\*([^*]+)\*\*/', '<strong>$1</strong>', $text);
+        
+        // 处理斜体 *text*
+        $text = preg_replace('/\*([^*]+)\*/', '<em>$1</em>', $text);
+        
+        // 处理链接 [text](url)
+        $text = preg_replace('/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2" target="_blank">$1</a>', $text);
+        
+        // 处理引用块 > text (支持多行引用)
+        $text = preg_replace_callback('/(^> .+(?:\n> .+)*)/m', function($matches) {
+            $lines = explode("\n", $matches[1]);
+            $content = '';
+            foreach ($lines as $line) {
+                if (preg_match('/^> (.+)$/', $line, $lineMatch)) {
+                    $content .= ($content ? '<br>' : '') . $lineMatch[1];
+                }
+            }
+            return '<blockquote>' . $content . '</blockquote>';
+        }, $text);
+        
+        // 处理无序列表
+        $text = preg_replace_callback('/^(\s*)[-*+] (.+)$/m', function($matches) {
+            $indent = strlen($matches[1]);
+            $item = $matches[2];
+            return str_repeat('  ', $indent) . '<li>' . $item . '</li>';
+        }, $text);
+        
+        // 包装连续的li标签为ul
+        $text = preg_replace('/(<li>.*<\/li>(\s*<li>.*<\/li>)*)/s', '<ul>$1</ul>', $text);
+        
+        // 处理有序列表
+        $text = preg_replace_callback('/^(\s*)(\d+)\. (.+)$/m', function($matches) {
+            $indent = strlen($matches[1]);
+            $item = $matches[3];
+            return str_repeat('  ', $indent) . '<li>' . $item . '</li>';
+        }, $text);
+        
+        // 包装连续的li标签为ol (优先级低于ul)
+        $text = preg_replace('/(?<!<\/ul>)(<li>.*<\/li>(\s*<li>.*<\/li>)*)(?!<ul>)/s', '<ol>$1</ol>', $text);
+        
+        // 处理换行
+        $text = nl2br($text);
+        
+        return $text;
     }
 }
 ?> 

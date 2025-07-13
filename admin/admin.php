@@ -68,64 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     exit;
 }
 
-// 处理 AJAX 请求获取关于我信息详情
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_about_info') {
-    $aboutInfoId = $_GET['id'] ?? 0;
-    
-    if ($aboutInfoId > 0) {
-        $aboutInfo = $db->getAboutInfo($aboutInfoId);
-        if ($aboutInfo) {
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => true,
-                'about_info' => $aboutInfo
-            ]);
-        } else {
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => false,
-                'message' => '关于我信息不存在'
-            ]);
-        }
-    } else {
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => '无效的关于我信息ID'
-        ]);
-    }
-    exit;
-}
-
-// 处理 AJAX 请求获取网站配置详情
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_site_config') {
-    $configId = $_GET['id'] ?? 0;
-    
-    if ($configId > 0) {
-        $siteConfig = $db->getSiteConfig($configId);
-        if ($siteConfig) {
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => true,
-                'site_config' => $siteConfig
-            ]);
-        } else {
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => false,
-                'message' => '网站配置不存在'
-            ]);
-        }
-    } else {
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => '无效的网站配置ID'
-        ]);
-    }
-    exit;
-}
-
 // 处理各种操作
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -167,11 +109,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tags = $_POST['tags'] ?? '';
             $featuredImage = $_POST['featured_image'] ?? '';
             $isFeatured = isset($_POST['is_featured']) ? 1 : 0;
-            $result = $db->createArticleWithExtras($title, $content, $excerpt, $categoryId, $_SESSION['admin_id'], $status, $tags, $featuredImage, $isFeatured);
+            $isAiGenerated = isset($_POST['is_ai_generated']) ? 1 : 0;
+            
+            // 检查推荐文章数量限制
+            if ($isFeatured) {
+                $currentFeaturedCount = $db->getFeaturedArticleCount();
+                if ($currentFeaturedCount >= 3) {
+                    $_SESSION['error_message'] = '推荐文章数量已达到最大限制（3篇），请先取消其他文章的推荐状态。';
+                    break;
+                }
+            }
+            
+            $result = $db->createArticleWithExtras($title, $content, $excerpt, $categoryId, $_SESSION['admin_id'], $status, $tags, $featuredImage, $isFeatured, $isAiGenerated);
             if ($result) {
                 $articleId = $db->getConnection()->lastInsertId();
                 $statusText = $status === 'published' ? '已发布' : '草稿';
                 $db->logActivity('article', 'created', $articleId, $title, $statusText, $_SESSION['admin_id']);
+                $_SESSION['success_message'] = "文章「{$title}」创建成功！";
             }
             break;
             
@@ -185,10 +139,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tags = $_POST['tags'] ?? '';
             $featuredImage = $_POST['featured_image'] ?? '';
             $isFeatured = isset($_POST['is_featured']) ? 1 : 0;
-            $result = $db->updateArticleWithExtras($id, $title, $content, $excerpt, $categoryId, $status, $tags, $featuredImage, $isFeatured);
+            $isAiGenerated = isset($_POST['is_ai_generated']) ? 1 : 0;
+            
+            // 检查推荐文章数量限制
+            if ($isFeatured) {
+                // 获取当前文章的推荐状态
+                $currentArticle = $db->getArticleForAdmin($id);
+                if ($currentArticle && !$currentArticle['is_featured']) {
+                    // 只有当前文章不是推荐状态时才需要检查数量限制
+                    $currentFeaturedCount = $db->getFeaturedArticleCount();
+                    if ($currentFeaturedCount >= 3) {
+                        $_SESSION['error_message'] = '推荐文章数量已达到最大限制（3篇），请先取消其他文章的推荐状态。';
+                        break;
+                    }
+                }
+            }
+            
+            $result = $db->updateArticleWithExtras($id, $title, $content, $excerpt, $categoryId, $status, $tags, $featuredImage, $isFeatured, $isAiGenerated);
             if ($result) {
                 $statusText = $status === 'published' ? '已发布' : '草稿';
                 $db->logActivity('article', 'updated', $id, $title, "更新为: $statusText", $_SESSION['admin_id']);
+                $_SESSION['success_message'] = "文章「{$title}」更新成功！";
             }
             break;
             
@@ -205,10 +176,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'];
             $featured = $_POST['featured'] === '1';
             $article = $db->getArticleForAdmin($id);
+            
+            if (!$article) {
+                $_SESSION['error_message'] = '文章不存在或已被删除。';
+                break;
+            }
+            
+            // 检查推荐文章数量限制
+            if ($featured) {
+                $currentFeaturedCount = $db->getFeaturedArticleCount();
+                if ($currentFeaturedCount >= 3) {
+                    $_SESSION['error_message'] = '推荐文章数量已达到最大限制（3篇），请先取消其他文章的推荐状态。';
+                    break;
+                }
+            }
+            
             $result = $db->toggleFeaturedArticle($id, $featured);
-            if ($result && $article) {
+            if ($result) {
                 $action = $featured ? '设为推荐' : '取消推荐';
                 $db->logActivity('article', 'featured_toggled', $id, $article['title'], $action, $_SESSION['admin_id']);
+                if ($featured) {
+                    $_SESSION['success_message'] = "文章「{$article['title']}」已设为推荐文章。";
+                } else {
+                    $_SESSION['success_message'] = "文章「{$article['title']}」已取消推荐。";
+                }
             }
             break;
             
@@ -267,45 +258,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $db->logActivity('recommendation', 'status_changed', $id, $rec['title'], $action, $_SESSION['admin_id']);
             }
             break;
-            
-
-            
-        case 'update_about_info':
-            $id = $_POST['id'];
-            $sectionName = $_POST['section_name'];
-            $sectionKey = $_POST['section_key'];
-            $content = $_POST['content'];
-            $contentType = $_POST['content_type'] ?? 'text';
-            $sortOrder = $_POST['sort_order'] ?? 0;
-            $isActive = isset($_POST['is_active']) ? 1 : 0;
-            $db->updateAboutInfo($id, $sectionName, $sectionKey, $content, $contentType, $sortOrder, $isActive);
-            break;
-            
-        case 'delete_about_info':
-            $id = $_POST['id'];
-            $db->deleteAboutInfo($id);
-            break;
-            
-        case 'toggle_about_info_status':
-            $id = $_POST['id'];
-            $isActive = $_POST['is_active'] === '1';
-            $db->toggleAboutInfoStatus($id, $isActive);
-            break;
-            
-        case 'update_site_config':
-            $id = $_POST['id'];
-            $configKey = $_POST['config_key'];
-            $configValue = $_POST['config_value'];
-            $configType = $_POST['config_type'] ?? 'text';
-            $description = $_POST['description'] ?? '';
-            $sortOrder = $_POST['sort_order'] ?? 0;
-            $db->updateSiteConfig($id, $configKey, $configValue, $configType, $description, $sortOrder);
-            break;
-            
-
     }
     
-    header('Location: admin.php');
+    // 保持当前标签页状态
+    $currentTab = $_POST['current_tab'] ?? 'dashboard';
+    header('Location: admin.php?tab=' . urlencode($currentTab));
     exit;
 }
 
@@ -318,8 +275,6 @@ $categories = $db->getCategories();
 $recentActivities = $db->getRecentActivities(8);
 $recommendations = $db->getAllRecommendations(20, null, null); // 获取所有推荐内容（包含活跃和非活跃）
 $recommendationStats = $db->getRecommendationStats();
-$aboutInfoList = $db->getAllAboutInfo(); // 获取所有关于我信息
-$siteConfigList = $db->getAllSiteConfig(); // 获取所有网站配置
 
 // 当前选中的标签页
 $currentTab = $_GET['tab'] ?? 'dashboard';
@@ -339,8 +294,11 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
             <div class="logo">🔓 后台管理系统</div>
             <div class="user-info">
                 <span>欢迎, <?php echo htmlspecialchars($_SESSION['admin_username']); ?></span>
+                <button onclick="window.location.href='../index.php'" class="logout-btn">主页</button>
+                <span style="margin: 0;">/</span>
                 <form method="POST" style="display: inline;">
                     <input type="hidden" name="action" value="logout">
+                    <input type="hidden" name="current_tab" value="<?php echo $currentTab; ?>">
                     <button type="submit" class="logout-btn">退出</button>
                 </form>
             </div>
@@ -352,8 +310,6 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
             <a href="?tab=dashboard" class="tab <?php echo $currentTab === 'dashboard' ? 'active' : ''; ?>">📊 仪表板</a>
             <a href="?tab=articles" class="tab <?php echo $currentTab === 'articles' ? 'active' : ''; ?>">📝 文章管理</a>
             <a href="?tab=recommendations" class="tab <?php echo $currentTab === 'recommendations' ? 'active' : ''; ?>">⭐ 推荐管理</a>
-            <a href="?tab=about" class="tab <?php echo $currentTab === 'about' ? 'active' : ''; ?>">👤 关于我管理</a>
-            <a href="?tab=site_config" class="tab <?php echo $currentTab === 'site_config' ? 'active' : ''; ?>">⚙️ 网站配置</a>
             <a href="?tab=comments" class="tab <?php echo $currentTab === 'comments' ? 'active' : ''; ?>">💬 评论管理</a>
             <a href="?tab=contacts" class="tab <?php echo $currentTab === 'contacts' ? 'active' : ''; ?>">📧 联系信息</a>
         </div>
@@ -519,6 +475,17 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                     <button onclick="openArticleModal()" class="btn btn-primary">新增文章</button>
                 </div>
                 <div class="card-body">
+                    <?php 
+                    $featuredCount = $db->getFeaturedArticleCount();
+                    ?>
+                    <div class="alert-info">
+                        <div class="alert-info-content">
+                            <span class="alert-info-icon">ℹ️</span>
+                            <span class="alert-info-text">
+                                注意：最多只能设置 <strong>3篇</strong> 推荐文章，当前已有 <strong><?php echo $featuredCount; ?></strong> 篇推荐文章。
+                            </span>
+                        </div>
+                    </div>
                     <table class="table">
                         <thead>
                             <tr>
@@ -543,7 +510,7 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="status-badge status-<?php echo $article['is_featured'] ? 'published' : 'draft'; ?>">
+                                    <span class="status-badge status-<?php echo $article['is_featured'] ? 'published' : 'draft'; ?>" title="<?php echo $article['is_featured'] ? '推荐文章' : '普通文章'; ?>">
                                         <?php echo $article['is_featured'] ? '★ 推荐' : '☆ 普通'; ?>
                                     </span>
                                 </td>
@@ -555,13 +522,26 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                             <input type="hidden" name="action" value="toggle_featured">
                                             <input type="hidden" name="id" value="<?php echo $article['id']; ?>">
                                             <input type="hidden" name="featured" value="<?php echo $article['is_featured'] ? '0' : '1'; ?>">
-                                            <button type="submit" class="btn <?php echo $article['is_featured'] ? 'btn-secondary' : 'btn-success'; ?>">
-                                                <?php echo $article['is_featured'] ? '取消推荐' : '设为推荐'; ?>
+                                            <input type="hidden" name="current_tab" value="<?php echo $currentTab; ?>">
+                                            <button type="submit" class="btn <?php echo $article['is_featured'] ? 'btn-secondary' : 'btn-success'; ?>" 
+                                                    <?php if (!$article['is_featured'] && $featuredCount >= 3): ?>
+                                                        disabled title="推荐文章数量已达到最大限制（3篇）"
+                                                    <?php else: ?>
+                                                        title="<?php echo $article['is_featured'] ? '点击取消推荐' : '点击设为推荐'; ?>"
+                                                    <?php endif; ?>>
+                                                <?php 
+                                                if ($article['is_featured']) {
+                                                    echo '取消推荐';
+                                                } else {
+                                                    echo $featuredCount >= 3 ? '推荐已满' : '设为推荐';
+                                                }
+                                                ?>
                                             </button>
                                         </form>
                                         <form method="POST" class="inline-form" onsubmit="return confirm('确定删除这篇文章吗？')">
                                             <input type="hidden" name="action" value="delete_article">
                                             <input type="hidden" name="id" value="<?php echo $article['id']; ?>">
+                                            <input type="hidden" name="current_tab" value="<?php echo $currentTab; ?>">
                                             <button type="submit" class="btn btn-danger">删除</button>
                                         </form>
                                     </div>
@@ -618,6 +598,7 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                             <input type="hidden" name="action" value="update_recommendation_status">
                                             <input type="hidden" name="id" value="<?php echo $recommendation['id']; ?>">
                                             <input type="hidden" name="status" value="<?php echo $recommendation['status'] === 'active' ? 'inactive' : 'active'; ?>">
+                                            <input type="hidden" name="current_tab" value="<?php echo $currentTab; ?>">
                                             <button type="submit" class="btn <?php echo $recommendation['status'] === 'active' ? 'btn-secondary' : 'btn-success'; ?>">
                                                 <?php echo $recommendation['status'] === 'active' ? '停用' : '启用'; ?>
                                             </button>
@@ -625,105 +606,9 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                         <form method="POST" class="inline-form" onsubmit="return confirm('确定删除这条推荐内容吗？')">
                                             <input type="hidden" name="action" value="delete_recommendation">
                                             <input type="hidden" name="id" value="<?php echo $recommendation['id']; ?>">
+                                            <input type="hidden" name="current_tab" value="<?php echo $currentTab; ?>">
                                             <button type="submit" class="btn btn-danger">删除</button>
                                         </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- 关于我管理 -->
-        <div class="tab-content <?php echo $currentTab === 'about' ? 'active' : ''; ?>">
-            <div class="content-card">
-                <div class="card-header">
-                    关于我信息管理
-                </div>
-                <div class="card-body">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>区块名称</th>
-                                <th>键名</th>
-                                <th>内容预览</th>
-                                <th>状态</th>
-                                <th>排序</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($aboutInfoList as $aboutInfo): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($aboutInfo['section_name']); ?></td>
-                                <td><code><?php echo htmlspecialchars($aboutInfo['section_key']); ?></code></td>
-                                <td class="text-truncate text-left" title="<?php echo htmlspecialchars($aboutInfo['content']); ?>">
-                                    <?php echo htmlspecialchars(mb_substr($aboutInfo['content'], 0, 50)) . (mb_strlen($aboutInfo['content']) > 50 ? '...' : ''); ?>
-                                </td>
-                                <td>
-                                    <span class="status-badge status-<?php echo $aboutInfo['is_active'] ? 'published' : 'draft'; ?>">
-                                        <?php echo $aboutInfo['is_active'] ? '启用' : '停用'; ?>
-                                    </span>
-                                </td>
-                                <td><?php echo $aboutInfo['sort_order']; ?></td>
-                                <td class="actions">
-                                    <div class="btn-group">
-                                        <button onclick="editAboutInfo(<?php echo $aboutInfo['id']; ?>)" class="btn btn-warning">编辑</button>
-                                        <form method="POST" class="inline-form">
-                                            <input type="hidden" name="action" value="toggle_about_info_status">
-                                            <input type="hidden" name="id" value="<?php echo $aboutInfo['id']; ?>">
-                                            <input type="hidden" name="is_active" value="<?php echo $aboutInfo['is_active'] ? '0' : '1'; ?>">
-                                            <button type="submit" class="btn <?php echo $aboutInfo['is_active'] ? 'btn-secondary' : 'btn-success'; ?>" 
-                                                    <?php echo $aboutInfo['is_active'] ? 'title="停用此项内容后，前端页面将显示默认模板内容"' : ''; ?>>
-                                                <?php echo $aboutInfo['is_active'] ? '停用' : '启用'; ?>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- 网站配置管理 -->
-        <div class="tab-content <?php echo $currentTab === 'site_config' ? 'active' : ''; ?>">
-            <div class="content-card">
-                <div class="card-header">
-                    网站配置管理
-                </div>
-                <div class="card-body">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>配置名称</th>
-                                <th>键名</th>
-                                <th>配置值预览</th>
-                                <th>类型</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($siteConfigList as $config): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($config['description'] ?: $config['config_key']); ?></td>
-                                <td><code><?php echo htmlspecialchars($config['config_key']); ?></code></td>
-                                <td class="text-truncate text-left" title="<?php echo htmlspecialchars($config['config_value']); ?>">
-                                    <?php echo htmlspecialchars(mb_substr($config['config_value'], 0, 50)) . (mb_strlen($config['config_value']) > 50 ? '...' : ''); ?>
-                                </td>
-                                <td>
-                                    <span class="status-badge status-<?php echo $config['config_type'] === 'url' ? 'published' : 'draft'; ?>">
-                                        <?php echo $config['config_type']; ?>
-                                    </span>
-                                </td>
-                                <td class="actions">
-                                    <div class="btn-group">
-                                        <button onclick="editSiteConfig(<?php echo $config['id']; ?>)" class="btn btn-warning">编辑</button>
                                     </div>
                                 </td>
                             </tr>
@@ -777,18 +662,21 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                             <input type="hidden" name="action" value="update_comment_status">
                                             <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
                                             <input type="hidden" name="status" value="approved">
+                                            <input type="hidden" name="current_tab" value="<?php echo $currentTab; ?>">
                                             <button type="submit" class="btn btn-success">批准</button>
                                         </form>
                                         <form method="POST" class="inline-form">
                                             <input type="hidden" name="action" value="update_comment_status">
                                             <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
                                             <input type="hidden" name="status" value="rejected">
+                                            <input type="hidden" name="current_tab" value="<?php echo $currentTab; ?>">
                                             <button type="submit" class="btn btn-warning">拒绝</button>
                                         </form>
                                         <?php endif; ?>
                                         <form method="POST" class="inline-form" onsubmit="return confirm('确定删除这条评论吗？')">
                                             <input type="hidden" name="action" value="delete_comment">
                                             <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
+                                            <input type="hidden" name="current_tab" value="<?php echo $currentTab; ?>">
                                             <button type="submit" class="btn btn-danger">删除</button>
                                         </form>
                                     </div>
@@ -844,6 +732,7 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                             <input type="hidden" name="action" value="update_contact_status">
                                             <input type="hidden" name="id" value="<?php echo $contact['id']; ?>">
                                             <input type="hidden" name="status" value="read">
+                                            <input type="hidden" name="current_tab" value="<?php echo $currentTab; ?>">
                                             <button type="submit" class="btn btn-success">标记已读</button>
                                         </form>
                                         <?php endif; ?>
@@ -852,12 +741,14 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                             <input type="hidden" name="action" value="update_contact_status">
                                             <input type="hidden" name="id" value="<?php echo $contact['id']; ?>">
                                             <input type="hidden" name="status" value="replied">
+                                            <input type="hidden" name="current_tab" value="<?php echo $currentTab; ?>">
                                             <button type="submit" class="btn btn-warning">标记已回复</button>
                                         </form>
                                         <?php endif; ?>
                                         <form method="POST" class="inline-form" onsubmit="return confirm('确定删除这条联系信息吗？')">
                                             <input type="hidden" name="action" value="delete_contact">
                                             <input type="hidden" name="id" value="<?php echo $contact['id']; ?>">
+                                            <input type="hidden" name="current_tab" value="<?php echo $currentTab; ?>">
                                             <button type="submit" class="btn btn-danger">删除</button>
                                         </form>
                                     </div>
@@ -882,6 +773,7 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                 <form method="POST" id="articleForm" onsubmit="return validateFormSubmit(event)">
                     <input type="hidden" name="action" value="create_article" id="formAction">
                     <input type="hidden" name="id" id="articleId">
+                    <input type="hidden" name="current_tab" value="articles">
                     
                     <div class="form-group">
                         <label for="title">标题</label>
@@ -933,6 +825,14 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                         </label>
                     </div>
                     
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="is_ai_generated" name="is_ai_generated" value="1">
+                            标记为AI生成内容
+                        </label>
+                        <small style="color: #666; font-size: 12px; margin-left: 20px;">勾选后前端会显示AI生成提示</small>
+                    </div>
+                    
                     <button type="submit" class="btn btn-primary">保存</button>
                     <button type="button" class="btn btn-secondary" onclick="closeArticleModal(event)">取消</button>
                 </form>
@@ -951,6 +851,7 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                 <form method="POST" id="recommendationForm" onsubmit="return validateRecommendationSubmit(event)">
                     <input type="hidden" name="action" value="create_recommendation" id="recommendationFormAction">
                     <input type="hidden" name="id" id="recommendationId">
+                    <input type="hidden" name="current_tab" value="recommendations">
                     
                     <div class="form-group">
                         <label for="rec_title">标题</label>
@@ -1006,111 +907,6 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                     
                     <button type="submit" class="btn btn-primary">保存</button>
                     <button type="button" class="btn btn-secondary" onclick="closeRecommendationModal(event)">取消</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- 关于我信息编辑模态框 -->
-    <div id="aboutInfoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="aboutInfoModalTitle">编辑关于我信息</h2>
-                <button class="close" onclick="closeAboutInfoModal(event)">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form method="POST" id="aboutInfoForm" onsubmit="return validateAboutInfoSubmit(event)">
-                    <input type="hidden" name="action" value="update_about_info" id="aboutInfoFormAction">
-                    <input type="hidden" name="id" id="aboutInfoId">
-                    
-                    <div class="form-group">
-                        <label for="about_section_name">区块名称</label>
-                        <input type="text" id="about_section_name" name="section_name" class="form-control" required placeholder="如：个人姓名、个人简介等">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="about_section_key">键名</label>
-                        <input type="text" id="about_section_key" name="section_key" class="form-control" required placeholder="如：name、bio等，用于前端调用">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="about_content">内容</label>
-                        <textarea id="about_content" name="content" class="form-control" rows="6" required placeholder="输入具体内容"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="about_content_type">内容类型</label>
-                        <select id="about_content_type" name="content_type" class="form-control" required>
-                            <option value="text">文本</option>
-                            <option value="html">HTML</option>
-                            <option value="json">JSON</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="about_sort_order">排序</label>
-                        <input type="number" id="about_sort_order" name="sort_order" class="form-control" value="0" min="0">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="about_is_active" name="is_active" value="1" checked>
-                            启用此信息
-                        </label>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">保存</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeAboutInfoModal(event)">取消</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- 网站配置编辑模态框 -->
-    <div id="siteConfigModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="siteConfigModalTitle">编辑网站配置</h2>
-                <button class="close" onclick="closeSiteConfigModal(event)">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form method="POST" id="siteConfigForm" onsubmit="return validateSiteConfigSubmit(event)">
-                    <input type="hidden" name="action" value="update_site_config" id="siteConfigFormAction">
-                    <input type="hidden" name="id" id="siteConfigId">
-                    
-                    <div class="form-group">
-                        <label for="site_config_key">配置键名</label>
-                        <input type="text" id="site_config_key" name="config_key" class="form-control" required readonly>
-                        <small class="form-text text-muted">配置键名不可修改</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="site_config_value">配置值</label>
-                        <textarea id="site_config_value" name="config_value" class="form-control" rows="6" required placeholder="输入配置值"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="site_config_type">配置类型</label>
-                        <select id="site_config_type" name="config_type" class="form-control" required>
-                            <option value="text">文本</option>
-                            <option value="url">URL链接</option>
-                            <option value="html">HTML</option>
-                            <option value="json">JSON</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="site_config_description">配置描述</label>
-                        <input type="text" id="site_config_description" name="description" class="form-control" placeholder="配置的用途描述">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="site_config_sort_order">排序</label>
-                        <input type="number" id="site_config_sort_order" name="sort_order" class="form-control" value="0" min="0">
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">保存</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeSiteConfigModal(event)">取消</button>
                 </form>
             </div>
         </div>
@@ -1199,6 +995,7 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                         document.getElementById('featured_image').value = article.featured_image || '';
                         document.getElementById('status').value = article.status || 'draft';
                         document.getElementById('is_featured').checked = article.is_featured == 1;
+                        document.getElementById('is_ai_generated').checked = article.is_ai_generated == 1;
                         
                         // 移除加载状态
                         modalTitle.textContent = '编辑文章';
@@ -1411,207 +1208,57 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
             }
         });
         
-        // 关于我信息相关功能
-        function validateAboutInfoSubmit(event) {
-            const modalBody = document.querySelector('#aboutInfoModal .modal-body');
-            
-            if (modalBody && modalBody.classList.contains('loading')) {
-                event.preventDefault();
-                return false;
+        // 通知系统
+        function showNotification(message, type = 'success') {
+            // 移除现有的通知
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
             }
             
-            return true;
+            // 创建新的通知
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            
+            const icon = type === 'success' ? '✓' : '⚠';
+            
+            notification.innerHTML = `
+                <div class="notification-icon">${icon}</div>
+                <div class="notification-content">${message}</div>
+                <button class="notification-close" onclick="hideNotification(this.parentElement)">&times;</button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 显示通知
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // 5秒后自动隐藏
+            setTimeout(() => {
+                hideNotification(notification);
+            }, 5000);
         }
-
-        function closeAboutInfoModal(event) {
-            const modal = document.getElementById('aboutInfoModal');
-            const modalTitle = document.getElementById('aboutInfoModalTitle');
-            const modalBody = document.querySelector('#aboutInfoModal .modal-body');
-            
-            if (modalBody && modalBody.classList.contains('loading')) {
-                if (event) {
-                    event.preventDefault();
-                }
-                return;
-            }
-            
-            modalTitle.removeAttribute('data-loading');
-            modalBody.classList.remove('loading');
-            
-            const formFields = document.querySelectorAll('#aboutInfoForm input, #aboutInfoForm textarea, #aboutInfoForm select');
-            formFields.forEach(field => {
-                field.disabled = false;
-            });
-            
-            modal.style.display = 'none';
-        }
-
-        function editAboutInfo(id) {
-            document.getElementById('aboutInfoModal').style.display = 'block';
-            const modalTitle = document.getElementById('aboutInfoModalTitle');
-            const modalBody = document.querySelector('#aboutInfoModal .modal-body');
-            
-            modalTitle.textContent = '编辑关于我信息 - 加载中...';
-            modalTitle.setAttribute('data-loading', 'true');
-            modalBody.classList.add('loading');
-            
-            document.getElementById('aboutInfoFormAction').value = 'update_about_info';
-            document.getElementById('aboutInfoId').value = id;
-            
-            document.getElementById('aboutInfoForm').reset();
-            
-            const formFields = document.querySelectorAll('#aboutInfoForm input, #aboutInfoForm textarea, #aboutInfoForm select');
-            formFields.forEach(field => {
-                field.disabled = true;
-            });
-            
-            fetch(`admin.php?action=get_about_info&id=${id}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const aboutInfo = data.about_info;
-                        document.getElementById('about_section_name').value = aboutInfo.section_name || '';
-                        document.getElementById('about_section_key').value = aboutInfo.section_key || '';
-                        document.getElementById('about_content').value = aboutInfo.content || '';
-                        document.getElementById('about_content_type').value = aboutInfo.content_type || 'text';
-                        document.getElementById('about_sort_order').value = aboutInfo.sort_order || 0;
-                        document.getElementById('about_is_active').checked = aboutInfo.is_active == 1;
-                        
-                        modalTitle.textContent = '编辑关于我信息';
-                        modalTitle.removeAttribute('data-loading');
-                        modalBody.classList.remove('loading');
-                        
-                        formFields.forEach(field => {
-                            field.disabled = false;
-                        });
-                    } else {
-                        alert('获取关于我信息详情失败：' + (data.message || '未知错误'));
-                        closeAboutInfoModal();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('获取关于我信息详情时发生错误');
-                    closeAboutInfoModal();
-                });
-        }
-
-        // 为关于我信息模态框添加事件监听器
-        document.addEventListener('DOMContentLoaded', function() {
-            const aboutInfoModal = document.getElementById('aboutInfoModal');
-            if (aboutInfoModal) {
-                // 点击模态框外部关闭
-                aboutInfoModal.addEventListener('click', function(e) {
-                    if (e.target === aboutInfoModal) {
-                        const modalBody = aboutInfoModal.querySelector('.modal-body');
-                        if (modalBody && modalBody.classList.contains('loading')) {
-                            return;
-                        }
-                        closeAboutInfoModal();
-                    }
-                });
-            }
-        });
         
-        // 网站配置相关功能
-        function validateSiteConfigSubmit(event) {
-            const modalBody = document.querySelector('#siteConfigModal .modal-body');
-            
-            if (modalBody && modalBody.classList.contains('loading')) {
-                event.preventDefault();
-                return false;
-            }
-            
-            return true;
-        }
-
-        function closeSiteConfigModal(event) {
-            const modal = document.getElementById('siteConfigModal');
-            const modalTitle = document.getElementById('siteConfigModalTitle');
-            const modalBody = document.querySelector('#siteConfigModal .modal-body');
-            
-            if (modalBody && modalBody.classList.contains('loading')) {
-                if (event) {
-                    event.preventDefault();
+        function hideNotification(notification) {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
                 }
-                return;
-            }
-            
-            modalTitle.removeAttribute('data-loading');
-            modalBody.classList.remove('loading');
-            
-            const formFields = document.querySelectorAll('#siteConfigForm input, #siteConfigForm textarea, #siteConfigForm select');
-            formFields.forEach(field => {
-                field.disabled = false;
-            });
-            
-            modal.style.display = 'none';
+            }, 300);
         }
-
-        function editSiteConfig(id) {
-            document.getElementById('siteConfigModal').style.display = 'block';
-            const modalTitle = document.getElementById('siteConfigModalTitle');
-            const modalBody = document.querySelector('#siteConfigModal .modal-body');
-            
-            modalTitle.textContent = '编辑网站配置 - 加载中...';
-            modalTitle.setAttribute('data-loading', 'true');
-            modalBody.classList.add('loading');
-            
-            document.getElementById('siteConfigFormAction').value = 'update_site_config';
-            document.getElementById('siteConfigId').value = id;
-            
-            document.getElementById('siteConfigForm').reset();
-            
-            const formFields = document.querySelectorAll('#siteConfigForm input, #siteConfigForm textarea, #siteConfigForm select');
-            formFields.forEach(field => {
-                field.disabled = true;
-            });
-            
-            fetch(`admin.php?action=get_site_config&id=${id}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const config = data.site_config;
-                        document.getElementById('site_config_key').value = config.config_key || '';
-                        document.getElementById('site_config_value').value = config.config_value || '';
-                        document.getElementById('site_config_type').value = config.config_type || 'text';
-                        document.getElementById('site_config_description').value = config.description || '';
-                        document.getElementById('site_config_sort_order').value = config.sort_order || 0;
-                        
-                        modalTitle.textContent = '编辑网站配置';
-                        modalTitle.removeAttribute('data-loading');
-                        modalBody.classList.remove('loading');
-                        
-                        formFields.forEach(field => {
-                            field.disabled = false;
-                        });
-                    } else {
-                        alert('获取网站配置详情失败：' + (data.message || '未知错误'));
-                        closeSiteConfigModal();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('获取网站配置详情时发生错误');
-                    closeSiteConfigModal();
-                });
-        }
-
-        // 为网站配置模态框添加事件监听器
+        
+        // 页面加载时检查是否有消息需要显示
         document.addEventListener('DOMContentLoaded', function() {
-            const siteConfigModal = document.getElementById('siteConfigModal');
-            if (siteConfigModal) {
-                // 点击模态框外部关闭
-                siteConfigModal.addEventListener('click', function(e) {
-                    if (e.target === siteConfigModal) {
-                        const modalBody = siteConfigModal.querySelector('.modal-body');
-                        if (modalBody && modalBody.classList.contains('loading')) {
-                            return;
-                        }
-                        closeSiteConfigModal();
-                    }
-                });
-            }
+            <?php if (isset($_SESSION['error_message'])): ?>
+                showNotification('<?php echo addslashes($_SESSION['error_message']); ?>', 'error');
+                <?php unset($_SESSION['error_message']); ?>
+            <?php elseif (isset($_SESSION['success_message'])): ?>
+                showNotification('<?php echo addslashes($_SESSION['success_message']); ?>', 'success');
+                <?php unset($_SESSION['success_message']); ?>
+            <?php endif; ?>
         });
     </script>
 </body>
