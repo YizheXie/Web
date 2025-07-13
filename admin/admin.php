@@ -39,6 +39,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     exit;
 }
 
+// 处理 AJAX 请求获取推荐内容详情
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_recommendation') {
+    $recommendationId = $_GET['id'] ?? 0;
+    
+    if ($recommendationId > 0) {
+        $recommendation = $db->getRecommendation($recommendationId);
+        if ($recommendation) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'recommendation' => $recommendation
+            ]);
+        } else {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'message' => '推荐内容不存在'
+            ]);
+        }
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => '无效的推荐内容ID'
+        ]);
+    }
+    exit;
+}
+
 // 处理各种操作
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -106,6 +135,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $featured = $_POST['featured'] === '1';
             $db->toggleFeaturedArticle($id, $featured);
             break;
+            
+        case 'create_recommendation':
+            $title = $_POST['title'];
+            $url = $_POST['url'];
+            $image = $_POST['image'] ?? '';
+            $tags = $_POST['tags'] ?? '';
+            $description = $_POST['description'];
+            $category = $_POST['category'];
+            $date = $_POST['date'];
+            $status = $_POST['status'];
+            $sortOrder = $_POST['sort_order'] ?? 0;
+            $db->createRecommendation($title, $url, $image, $tags, $description, $category, $date, $status, $sortOrder);
+            break;
+            
+        case 'update_recommendation':
+            $id = $_POST['id'];
+            $title = $_POST['title'];
+            $url = $_POST['url'];
+            $image = $_POST['image'] ?? '';
+            $tags = $_POST['tags'] ?? '';
+            $description = $_POST['description'];
+            $category = $_POST['category'];
+            $date = $_POST['date'];
+            $status = $_POST['status'];
+            $sortOrder = $_POST['sort_order'] ?? 0;
+            $db->updateRecommendation($id, $title, $url, $image, $tags, $description, $category, $date, $status, $sortOrder);
+            break;
+            
+        case 'delete_recommendation':
+            $id = $_POST['id'];
+            $db->deleteRecommendation($id);
+            break;
+            
+        case 'update_recommendation_status':
+            $id = $_POST['id'];
+            $status = $_POST['status'];
+            $db->updateRecommendationStatus($id, $status);
+            break;
     }
     
     header('Location: admin.php');
@@ -119,6 +186,8 @@ $comments = $db->getAllComments(10);
 $contacts = $db->getAllContacts(10);
 $categories = $db->getCategories();
 $recentActivities = $db->getRecentActivities(8);
+$recommendations = $db->getAllRecommendations(20, null, null); // 获取所有推荐内容（包含活跃和非活跃）
+$recommendationStats = $db->getRecommendationStats();
 
 // 当前选中的标签页
 $currentTab = $_GET['tab'] ?? 'dashboard';
@@ -149,6 +218,7 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
         <div class="tabs">
             <a href="?tab=dashboard" class="tab <?php echo $currentTab === 'dashboard' ? 'active' : ''; ?>">📊 仪表板</a>
             <a href="?tab=articles" class="tab <?php echo $currentTab === 'articles' ? 'active' : ''; ?>">📝 文章管理</a>
+            <a href="?tab=recommendations" class="tab <?php echo $currentTab === 'recommendations' ? 'active' : ''; ?>">⭐ 推荐管理</a>
             <a href="?tab=comments" class="tab <?php echo $currentTab === 'comments' ? 'active' : ''; ?>">💬 评论管理</a>
             <a href="?tab=contacts" class="tab <?php echo $currentTab === 'contacts' ? 'active' : ''; ?>">📧 联系信息</a>
         </div>
@@ -163,6 +233,14 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                 <div class="stat-card">
                     <div class="stat-number"><?php echo $stats['published_articles']; ?></div>
                     <div class="stat-label">已发布文章</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number"><?php echo $recommendationStats['total_recommendations']; ?></div>
+                    <div class="stat-label">推荐内容</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number"><?php echo $recommendationStats['active_recommendations']; ?></div>
+                    <div class="stat-label">活跃推荐</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number"><?php echo $stats['total_comments']; ?></div>
@@ -328,6 +406,69 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                         <form method="POST" class="inline-form" onsubmit="return confirm('确定删除这篇文章吗？')">
                                             <input type="hidden" name="action" value="delete_article">
                                             <input type="hidden" name="id" value="<?php echo $article['id']; ?>">
+                                            <button type="submit" class="btn btn-danger">删除</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 推荐管理 -->
+        <div class="tab-content <?php echo $currentTab === 'recommendations' ? 'active' : ''; ?>">
+            <div class="content-card">
+                <div class="card-header">
+                    推荐内容管理
+                    <button onclick="openRecommendationModal()" class="btn btn-primary">新增推荐</button>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>标题</th>
+                                <th>分类</th>
+                                <th>状态</th>
+                                <th>排序</th>
+                                <th>日期</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($recommendations as $recommendation): ?>
+                            <tr>
+                                <td><?php echo $recommendation['id']; ?></td>
+                                <td class="text-truncate text-left" title="<?php echo htmlspecialchars($recommendation['title']); ?>">
+                                    <a href="<?php echo htmlspecialchars($recommendation['url']); ?>" target="_blank">
+                                        <?php echo htmlspecialchars($recommendation['title']); ?>
+                                    </a>
+                                </td>
+                                <td><?php echo htmlspecialchars($recommendation['category']); ?></td>
+                                <td>
+                                    <span class="status-badge status-<?php echo $recommendation['status'] === 'active' ? 'published' : 'draft'; ?>">
+                                        <?php echo $recommendation['status'] === 'active' ? '活跃' : '停用'; ?>
+                                    </span>
+                                </td>
+                                <td><?php echo $recommendation['sort_order']; ?></td>
+                                <td><?php echo date('Y-m-d', strtotime($recommendation['date'])); ?></td>
+                                <td class="actions">
+                                    <div class="btn-group">
+                                        <button onclick="editRecommendation(<?php echo $recommendation['id']; ?>)" class="btn btn-warning">编辑</button>
+                                        <form method="POST" class="inline-form">
+                                            <input type="hidden" name="action" value="update_recommendation_status">
+                                            <input type="hidden" name="id" value="<?php echo $recommendation['id']; ?>">
+                                            <input type="hidden" name="status" value="<?php echo $recommendation['status'] === 'active' ? 'inactive' : 'active'; ?>">
+                                            <button type="submit" class="btn <?php echo $recommendation['status'] === 'active' ? 'btn-secondary' : 'btn-success'; ?>">
+                                                <?php echo $recommendation['status'] === 'active' ? '停用' : '启用'; ?>
+                                            </button>
+                                        </form>
+                                        <form method="POST" class="inline-form" onsubmit="return confirm('确定删除这条推荐内容吗？')">
+                                            <input type="hidden" name="action" value="delete_recommendation">
+                                            <input type="hidden" name="id" value="<?php echo $recommendation['id']; ?>">
                                             <button type="submit" class="btn btn-danger">删除</button>
                                         </form>
                                     </div>
@@ -546,6 +687,77 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
         </div>
     </div>
 
+    <!-- 推荐内容编辑模态框 -->
+    <div id="recommendationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="recommendationModalTitle">新增推荐内容</h2>
+                <button class="close" onclick="closeRecommendationModal(event)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" id="recommendationForm" onsubmit="return validateRecommendationSubmit(event)">
+                    <input type="hidden" name="action" value="create_recommendation" id="recommendationFormAction">
+                    <input type="hidden" name="id" id="recommendationId">
+                    
+                    <div class="form-group">
+                        <label for="rec_title">标题</label>
+                        <input type="text" id="rec_title" name="title" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rec_url">链接</label>
+                        <input type="url" id="rec_url" name="url" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rec_category">分类</label>
+                        <select id="rec_category" name="category" class="form-control" required>
+                            <option value="">选择分类</option>
+                            <option value="学习资源">学习资源</option>
+                            <option value="工具推荐">工具推荐</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rec_description">描述</label>
+                        <textarea id="rec_description" name="description" class="form-control" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rec_tags">标签</label>
+                        <input type="text" id="rec_tags" name="tags" class="form-control" placeholder="多个标签用逗号分隔，如：AI,工具">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rec_image">图片路径</label>
+                        <input type="text" id="rec_image" name="image" class="form-control" placeholder="如：./static/img/background/background1.png">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rec_date">日期</label>
+                        <input type="date" id="rec_date" name="date" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rec_sort_order">排序</label>
+                        <input type="number" id="rec_sort_order" name="sort_order" class="form-control" value="0" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rec_status">状态</label>
+                        <select id="rec_status" name="status" class="form-control" required>
+                            <option value="active">活跃</option>
+                            <option value="inactive">停用</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeRecommendationModal(event)">取消</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         function openArticleModal() {
             document.getElementById('articleModal').style.display = 'block';
@@ -726,6 +938,119 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                     closeArticleModal();
                 }
             });
+        });
+        
+        // 推荐内容相关功能
+        function openRecommendationModal() {
+            document.getElementById('recommendationModal').style.display = 'block';
+            document.getElementById('recommendationModalTitle').textContent = '新增推荐内容';
+            document.getElementById('recommendationFormAction').value = 'create_recommendation';
+            document.getElementById('recommendationForm').reset();
+            document.getElementById('rec_date').value = new Date().toISOString().split('T')[0];
+        }
+
+        function validateRecommendationSubmit(event) {
+            const modalBody = document.querySelector('#recommendationModal .modal-body');
+            
+            if (modalBody && modalBody.classList.contains('loading')) {
+                event.preventDefault();
+                return false;
+            }
+            
+            return true;
+        }
+
+        function closeRecommendationModal(event) {
+            const modal = document.getElementById('recommendationModal');
+            const modalTitle = document.getElementById('recommendationModalTitle');
+            const modalBody = document.querySelector('#recommendationModal .modal-body');
+            
+            if (modalBody && modalBody.classList.contains('loading')) {
+                if (event) {
+                    event.preventDefault();
+                }
+                return;
+            }
+            
+            modalTitle.removeAttribute('data-loading');
+            modalBody.classList.remove('loading');
+            
+            const formFields = document.querySelectorAll('#recommendationForm input, #recommendationForm textarea, #recommendationForm select');
+            formFields.forEach(field => {
+                field.disabled = false;
+            });
+            
+            modal.style.display = 'none';
+        }
+
+        function editRecommendation(id) {
+            document.getElementById('recommendationModal').style.display = 'block';
+            const modalTitle = document.getElementById('recommendationModalTitle');
+            const modalBody = document.querySelector('#recommendationModal .modal-body');
+            
+            modalTitle.textContent = '编辑推荐内容 - 加载中...';
+            modalTitle.setAttribute('data-loading', 'true');
+            modalBody.classList.add('loading');
+            
+            document.getElementById('recommendationFormAction').value = 'update_recommendation';
+            document.getElementById('recommendationId').value = id;
+            
+            document.getElementById('recommendationForm').reset();
+            
+            const formFields = document.querySelectorAll('#recommendationForm input, #recommendationForm textarea, #recommendationForm select');
+            formFields.forEach(field => {
+                field.disabled = true;
+            });
+            
+            fetch(`admin.php?action=get_recommendation&id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const rec = data.recommendation;
+                        document.getElementById('rec_title').value = rec.title || '';
+                        document.getElementById('rec_url').value = rec.url || '';
+                        document.getElementById('rec_category').value = rec.category || '';
+                        document.getElementById('rec_description').value = rec.description || '';
+                        document.getElementById('rec_tags').value = rec.tags || '';
+                        document.getElementById('rec_image').value = rec.image || '';
+                        document.getElementById('rec_date').value = rec.date || '';
+                        document.getElementById('rec_sort_order').value = rec.sort_order || 0;
+                        document.getElementById('rec_status').value = rec.status || 'active';
+                        
+                        modalTitle.textContent = '编辑推荐内容';
+                        modalTitle.removeAttribute('data-loading');
+                        modalBody.classList.remove('loading');
+                        
+                        formFields.forEach(field => {
+                            field.disabled = false;
+                        });
+                    } else {
+                        alert('获取推荐内容详情失败：' + (data.message || '未知错误'));
+                        closeRecommendationModal();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('获取推荐内容详情时发生错误');
+                    closeRecommendationModal();
+                });
+        }
+
+        // 为推荐内容模态框添加事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            const recommendationModal = document.getElementById('recommendationModal');
+            if (recommendationModal) {
+                // 点击模态框外部关闭
+                recommendationModal.addEventListener('click', function(e) {
+                    if (e.target === recommendationModal) {
+                        const modalBody = recommendationModal.querySelector('.modal-body');
+                        if (modalBody && modalBody.classList.contains('loading')) {
+                            return;
+                        }
+                        closeRecommendationModal();
+                    }
+                });
+            }
         });
     </script>
 </body>

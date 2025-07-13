@@ -1,3 +1,11 @@
+<?php
+require_once 'database.php';
+
+// 获取推荐内容
+$db = Database::getInstance();
+$learningResources = $db->getRecommendationsByCategory('学习资源');
+$toolRecommendations = $db->getRecommendationsByCategory('工具推荐');
+?>
 <!DOCTYPE html>
 <html>
 
@@ -142,60 +150,36 @@
                 </div>
 
                 <div class="projectList">
-                    <a class="recommendCard" href="https://zh-v2.d2l.ai/">
-                        <div class="recommendCard-img">
-                            <img src="./static/img/background/background1.png" alt="动手学深度学习">
-                            <div class="recommendCard-overlay">
-                                <div class="recommendCard-overlay-title">动手学深度学习</div>
-                            </div>
-                        </div>
-                        <div class="recommendCard-content">
-                            <div class="recommendCard-meta">
-                                <div>
-                                    <span class="recommendCard-tag"># DL</span>
-                                    <span class="recommendCard-tag"># 编程</span>
+                    <?php if (!empty($learningResources)): ?>
+                        <?php foreach ($learningResources as $resource): ?>
+                            <a class="recommendCard" href="<?php echo htmlspecialchars($resource['url']); ?>">
+                                <div class="recommendCard-img">
+                                    <img src="<?php echo htmlspecialchars($resource['image'] ?: './static/img/background/background1.png'); ?>" 
+                                         alt="<?php echo htmlspecialchars($resource['title']); ?>">
+                                    <div class="recommendCard-overlay">
+                                        <div class="recommendCard-overlay-title"><?php echo htmlspecialchars($resource['title']); ?></div>
+                                    </div>
                                 </div>
-                                <div class="recommendCard-date">2025-01-05</div>
-                            </div>
-                            <div class="recommendCard-desc">新手必读，李沐大神作品，b站还有讲解视频 ~</div>
-                        </div>
-                    </a>
-                    <a class="recommendCard" href="https://www.bilibili.com/video/BV1v64y1Q78o/?p=1">
-                        <div class="recommendCard-img">
-                            <img src="./static/img/background/background3.png" alt="Berkeley CS61A">
-                            <div class="recommendCard-overlay">
-                                <div class="recommendCard-overlay-title">Berkeley CS61A</div>
-                            </div>
-                        </div>
-                        <div class="recommendCard-content">
-                            <div class="recommendCard-meta">
-                                <div>
-                                    <span class="recommendCard-tag"># CS</span>
-                                    <span class="recommendCard-tag"># 编程</span>
+                                <div class="recommendCard-content">
+                                    <div class="recommendCard-meta">
+                                        <div>
+                                            <?php if (!empty($resource['tags'])): ?>
+                                                <?php foreach (explode(',', $resource['tags']) as $tag): ?>
+                                                    <span class="recommendCard-tag"># <?php echo htmlspecialchars(trim($tag)); ?></span>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="recommendCard-date"><?php echo date('Y-m-d', strtotime($resource['date'])); ?></div>
+                                    </div>
+                                    <div class="recommendCard-desc"><?php echo htmlspecialchars($resource['description']); ?></div>
                                 </div>
-                                <div class="recommendCard-date">2025-01-02</div>
-                            </div>
-                            <div class="recommendCard-desc">自学 CS 推荐第一课伯克利 CS61A (SP21)</div>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="no-content">
+                            <p>暂无学习资源推荐</p>
                         </div>
-                    </a>
-                    <a class="recommendCard" href="https://survivesjtu.gitbook.io/survivesjtumanual">
-                        <div class="recommendCard-img">
-                            <img src="./static/img/background/background4.png" alt="上海交通大学生存手册">
-                            <div class="recommendCard-overlay">
-                                <div class="recommendCard-overlay-title">上海交通大学生存手册</div>
-                            </div>
-                        </div>
-                        <div class="recommendCard-content">
-                            <div class="recommendCard-meta">
-                                <div>
-                                    <span class="recommendCard-tag"># 学习</span>
-                                    <span class="recommendCard-tag"># 大学</span>
-                                </div>
-                                <div class="recommendCard-date">2024-12-28</div>
-                            </div>
-                            <div class="recommendCard-desc">"带给读者一些新鲜的思考，能看到道路上不同的风景。"</div>
-                        </div>
-                    </a>
+                    <?php endif; ?>
                 </div>
 
                 <!-- 工具推荐区块 -->
@@ -210,60 +194,36 @@
                 </div>
 
                 <div class="projectList">
-                    <a class="recommendCard" href="https://chat.openai.com/">
-                        <div class="recommendCard-img">
-                            <img src="./static/img/background/background2.png" alt="ChatGPT">
-                            <div class="recommendCard-overlay">
-                                <div class="recommendCard-overlay-title">ChatGPT</div>
-                            </div>
-                        </div>
-                        <div class="recommendCard-content">
-                            <div class="recommendCard-meta">
-                                <div>
-                                    <span class="recommendCard-tag"># AI</span>
-                                    <span class="recommendCard-tag"># 工具</span>
+                    <?php if (!empty($toolRecommendations)): ?>
+                        <?php foreach ($toolRecommendations as $tool): ?>
+                            <a class="recommendCard" href="<?php echo htmlspecialchars($tool['url']); ?>">
+                                <div class="recommendCard-img">
+                                    <img src="<?php echo htmlspecialchars($tool['image'] ?: './static/img/background/background2.png'); ?>" 
+                                         alt="<?php echo htmlspecialchars($tool['title']); ?>">
+                                    <div class="recommendCard-overlay">
+                                        <div class="recommendCard-overlay-title"><?php echo htmlspecialchars($tool['title']); ?></div>
+                                    </div>
                                 </div>
-                                <div class="recommendCard-date">2025-01-10</div>
-                            </div>
-                            <div class="recommendCard-desc">强大的AI助手，可以帮助学习和解决各种问题</div>
-                        </div>
-                    </a>
-                    <a class="recommendCard" href="https://www.cursor.com/cn">
-                        <div class="recommendCard-img">
-                            <img src="./static/img/background/background5.png" alt="Cursor">
-                            <div class="recommendCard-overlay">
-                                <div class="recommendCard-overlay-title">Cursor</div>
-                            </div>
-                        </div>
-                        <div class="recommendCard-content">
-                            <div class="recommendCard-meta">
-                                <div>
-                                    <span class="recommendCard-tag"># 编程</span>
-                                    <span class="recommendCard-tag"># AI</span>
+                                <div class="recommendCard-content">
+                                    <div class="recommendCard-meta">
+                                        <div>
+                                            <?php if (!empty($tool['tags'])): ?>
+                                                <?php foreach (explode(',', $tool['tags']) as $tag): ?>
+                                                    <span class="recommendCard-tag"># <?php echo htmlspecialchars(trim($tag)); ?></span>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="recommendCard-date"><?php echo date('Y-m-d', strtotime($tool['date'])); ?></div>
+                                    </div>
+                                    <div class="recommendCard-desc"><?php echo htmlspecialchars($tool['description']); ?></div>
                                 </div>
-                                <div class="recommendCard-date">2025-01-08</div>
-                            </div>
-                            <div class="recommendCard-desc">YYDS! Cursor支持国内卡支付，妈妈再也不用担心我被虚拟卡骗了</div>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="no-content">
+                            <p>暂无工具推荐</p>
                         </div>
-                    </a>
-                    <a class="recommendCard" href="https://www.notion.so/">
-                        <div class="recommendCard-img">
-                            <img src="./static/img/background/background6.png" alt="Notion">
-                            <div class="recommendCard-overlay">
-                                <div class="recommendCard-overlay-title">Notion</div>
-                            </div>
-                        </div>
-                        <div class="recommendCard-content">
-                            <div class="recommendCard-meta">
-                                <div>
-                                    <span class="recommendCard-tag"># 笔记</span>
-                                    <span class="recommendCard-tag"># 效率</span>
-                                </div>
-                                <div class="recommendCard-date">2024-12-30</div>
-                            </div>
-                            <div class="recommendCard-desc">集成笔记、知识库、项目管理于一体的全能工具</div>
-                        </div>
-                    </a>
+                    <?php endif; ?>
                 </div>
             </main>
         </div>

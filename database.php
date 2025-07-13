@@ -667,5 +667,120 @@ class Database {
         // 返回指定数量的活动
         return array_slice($activities, 0, $limit);
     }
+    
+    // 推荐内容相关方法
+    // 获取所有推荐内容
+    public function getAllRecommendations($limit = null, $category = null, $status = 'active') {
+        $sql = "SELECT * FROM recommendations WHERE 1=1";
+        $params = [];
+        
+        if ($status) {
+            $sql .= " AND status = :status";
+            $params['status'] = $status;
+        }
+        
+        if ($category) {
+            $sql .= " AND category = :category";
+            $params['category'] = $category;
+        }
+        
+        $sql .= " ORDER BY sort_order ASC, created_at DESC";
+        
+        if ($limit) {
+            $sql .= " LIMIT :limit";
+            $params['limit'] = $limit;
+        }
+        
+        $stmt = $this->connection->prepare($sql);
+        foreach ($params as $key => $value) {
+            if ($key === 'limit') {
+                $stmt->bindValue(':limit', (int)$value, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue(':' . $key, $value);
+            }
+        }
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+    
+    // 获取推荐内容（按分类）
+    public function getRecommendationsByCategory($category, $limit = null) {
+        return $this->getAllRecommendations($limit, $category, 'active');
+    }
+    
+    // 获取单个推荐内容
+    public function getRecommendation($id) {
+        $sql = "SELECT * FROM recommendations WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
+    
+    // 创建推荐内容
+    public function createRecommendation($title, $url, $image, $tags, $description, $category, $date, $status = 'active', $sortOrder = 0) {
+        $sql = "INSERT INTO recommendations (title, url, image, tags, description, category, date, status, sort_order) 
+                VALUES (:title, :url, :image, :tags, :description, :category, :date, :status, :sort_order)";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':title', $title);
+        $stmt->bindValue(':url', $url);
+        $stmt->bindValue(':image', $image);
+        $stmt->bindValue(':tags', $tags);
+        $stmt->bindValue(':description', $description);
+        $stmt->bindValue(':category', $category);
+        $stmt->bindValue(':date', $date);
+        $stmt->bindValue(':status', $status);
+        $stmt->bindValue(':sort_order', $sortOrder, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+    
+    // 更新推荐内容
+    public function updateRecommendation($id, $title, $url, $image, $tags, $description, $category, $date, $status, $sortOrder) {
+        $sql = "UPDATE recommendations SET title = :title, url = :url, image = :image, tags = :tags, 
+                description = :description, category = :category, date = :date, status = :status, sort_order = :sort_order 
+                WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->bindValue(':title', $title);
+        $stmt->bindValue(':url', $url);
+        $stmt->bindValue(':image', $image);
+        $stmt->bindValue(':tags', $tags);
+        $stmt->bindValue(':description', $description);
+        $stmt->bindValue(':category', $category);
+        $stmt->bindValue(':date', $date);
+        $stmt->bindValue(':status', $status);
+        $stmt->bindValue(':sort_order', $sortOrder, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+    
+    // 删除推荐内容
+    public function deleteRecommendation($id) {
+        $sql = "DELETE FROM recommendations WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+    
+    // 更新推荐内容状态
+    public function updateRecommendationStatus($id, $status) {
+        $sql = "UPDATE recommendations SET status = :status WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->bindValue(':status', $status);
+        return $stmt->execute();
+    }
+    
+    // 获取推荐内容统计数据
+    public function getRecommendationStats() {
+        $sql = "SELECT 
+                    COUNT(*) as total_recommendations,
+                    SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_recommendations,
+                    SUM(CASE WHEN category = '学习资源' THEN 1 ELSE 0 END) as learning_resources,
+                    SUM(CASE WHEN category = '工具推荐' THEN 1 ELSE 0 END) as tool_recommendations
+                FROM recommendations";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
 }
 ?> 
