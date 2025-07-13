@@ -567,96 +567,128 @@ class Database {
     
     // 获取最近活动数据
     public function getRecentActivities($limit = 10) {
+        // 优先从活动日志表获取记录的活动
+        $sql = "SELECT 
+                    al.type, al.action, al.item_id, al.item_title, al.details, al.created_at,
+                    u.username as admin_name
+                FROM activity_logs al
+                LEFT JOIN users u ON al.admin_id = u.id
+                ORDER BY al.created_at DESC 
+                LIMIT :limit";
+        
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        $logActivities = $stmt->fetchAll();
+        
         $activities = [];
         
-        // 获取最近的文章活动
-        $sql = "SELECT 
-                    a.id, a.title, a.status, a.created_at, a.updated_at,
-                    u.username as author_name,
-                    'article' as type
-                FROM articles a 
-                LEFT JOIN users u ON a.author_id = u.id 
-                ORDER BY a.created_at DESC 
-                LIMIT :limit";
-        
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->execute();
-        $articles = $stmt->fetchAll();
-        
-        foreach ($articles as $article) {
+        foreach ($logActivities as $log) {
+            $iconMap = [
+                'article' => [
+                    'created' => '📝',
+                    'updated' => '✏️',
+                    'deleted' => '🗑️',
+                    'featured_toggled' => '⭐'
+                ],
+                'recommendation' => [
+                    'created' => '⭐',
+                    'updated' => '✏️',
+                    'deleted' => '🗑️',
+                    'status_changed' => '🔄'
+                ],
+                'comment' => [
+                    'created' => '💬',
+                    'status_changed' => '🔄',
+                    'deleted' => '🗑️'
+                ],
+                'contact' => [
+                    'created' => '📧',
+                    'status_changed' => '🔄',
+                    'deleted' => '🗑️'
+                ]
+            ];
+            
+            $colorMap = [
+                'article' => 'success',
+                'recommendation' => 'primary', 
+                'comment' => 'warning',
+                'contact' => 'secondary'
+            ];
+            
+            // 根据操作类型和详情确定状态
+            $displayStatus = 'active';
+            if ($log['action'] === 'deleted') {
+                $displayStatus = 'deleted';
+            } elseif ($log['type'] === 'recommendation' && $log['action'] === 'status_changed') {
+                // 推荐内容状态：停用 -> inactive，已启用 -> active
+                $displayStatus = strpos($log['details'], '停用') !== false ? 'inactive' : 'active';
+            } elseif ($log['type'] === 'article') {
+                if ($log['action'] === 'featured_toggled') {
+                    // 文章推荐操作：取消推荐 -> inactive，设为推荐 -> active
+                    $displayStatus = strpos($log['details'], '取消推荐') !== false ? 'inactive' : 'active';
+                } elseif ($log['action'] === 'updated' || $log['action'] === 'created') {
+                    // 文章编辑/创建操作：需要查询文章实际状态
+                    $articleSql = "SELECT status FROM articles WHERE id = :id";
+                    $articleStmt = $this->connection->prepare($articleSql);
+                    $articleStmt->bindParam(':id', $log['item_id'], PDO::PARAM_INT);
+                    $articleStmt->execute();
+                    $articleStatus = $articleStmt->fetchColumn();
+                    
+                    $displayStatus = $articleStatus === 'published' ? 'published' : 'draft';
+                } else {
+                    $displayStatus = 'active';
+                }
+            }
+            
             $activities[] = [
-                'type' => 'article',
-                'action' => 'created',
-                'item_id' => $article['id'],
-                'title' => $article['title'],
-                'status' => $article['status'],
-                'author' => $article['author_name'],
-                'time' => $article['created_at'],
-                'icon' => '📝',
-                'color' => $article['status'] === 'published' ? 'success' : 'warning'
+                'type' => $log['type'],
+                'action' => $log['action'],
+                'item_id' => $log['item_id'],
+                'title' => $log['item_title'],
+                'content' => $log['details'],
+                'status' => $displayStatus,
+                'author' => $log['admin_name'] ?: 'admin',
+                'time' => $log['created_at'],
+                'icon' => $iconMap[$log['type']][$log['action']] ?? '📄',
+                'color' => $colorMap[$log['type']] ?? 'secondary'
             ];
         }
         
-        // 获取最近的评论活动
-        $sql = "SELECT 
-                    c.id, c.author_name, c.content, c.status, c.created_at,
-                    a.title as article_title,
-                    'comment' as type
-                FROM comments c 
-                LEFT JOIN articles a ON c.article_id = a.id 
-                ORDER BY c.created_at DESC 
-                LIMIT :limit";
-        
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->execute();
-        $comments = $stmt->fetchAll();
-        
-        foreach ($comments as $comment) {
-            $activities[] = [
-                'type' => 'comment',
-                'action' => 'created',
-                'item_id' => $comment['id'],
-                'title' => $comment['article_title'],
-                'content' => mb_substr($comment['content'], 0, 50) . '...',
-                'status' => $comment['status'],
-                'author' => $comment['author_name'],
-                'time' => $comment['created_at'],
-                'icon' => '💬',
-                'color' => $comment['status'] === 'approved' ? 'success' : 
-                          ($comment['status'] === 'pending' ? 'warning' : 'danger')
-            ];
-        }
-        
-        // 获取最近的联系信息活动
-        $sql = "SELECT 
-                    id, name, email, message, status, created_at,
-                    'contact' as type
-                FROM contacts 
-                ORDER BY created_at DESC 
-                LIMIT :limit";
-        
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->execute();
-        $contacts = $stmt->fetchAll();
-        
-        foreach ($contacts as $contact) {
-            $activities[] = [
-                'type' => 'contact',
-                'action' => 'created',
-                'item_id' => $contact['id'],
-                'title' => '来自 ' . $contact['name'] . ' 的联系',
-                'content' => mb_substr($contact['message'], 0, 50) . '...',
-                'status' => $contact['status'],
-                'author' => $contact['name'],
-                'email' => $contact['email'],
-                'time' => $contact['created_at'],
-                'icon' => '📧',
-                'color' => $contact['status'] === 'new' ? 'primary' : 
-                          ($contact['status'] === 'read' ? 'secondary' : 'success')
-            ];
+        // 如果日志记录不足，补充一些最近的直接活动
+        if (count($activities) < $limit) {
+            $remaining = $limit - count($activities);
+            
+            // 获取最近的评论（如果没有在日志中记录）
+            $sql = "SELECT 
+                        c.id, c.author_name, c.content, c.status, c.created_at,
+                        a.title as article_title
+                    FROM comments c 
+                    LEFT JOIN articles a ON c.article_id = a.id 
+                    WHERE c.created_at > COALESCE((SELECT MAX(created_at) FROM activity_logs WHERE type = 'comment'), '1970-01-01')
+                    ORDER BY c.created_at DESC 
+                    LIMIT :remaining";
+            
+            $stmt = $this->connection->prepare($sql);
+            $stmt->bindParam(':remaining', $remaining, PDO::PARAM_INT);
+            $stmt->execute();
+            $comments = $stmt->fetchAll();
+            
+            foreach ($comments as $comment) {
+                $activities[] = [
+                    'type' => 'comment',
+                    'action' => 'created',
+                    'item_id' => $comment['id'],
+                    'title' => $comment['article_title'],
+                    'content' => mb_substr($comment['content'], 0, 50) . '...',
+                    'status' => $comment['status'],
+                    'author' => $comment['author_name'],
+                    'time' => $comment['created_at'],
+                    'icon' => '💬',
+                    'color' => $comment['status'] === 'approved' ? 'success' : 
+                              ($comment['status'] === 'pending' ? 'warning' : 'danger')
+                ];
+            }
         }
         
         // 按时间排序
@@ -781,6 +813,20 @@ class Database {
         $stmt = $this->connection->prepare($sql);
         $stmt->execute();
         return $stmt->fetch();
+    }
+    
+    // 活动日志相关方法
+    public function logActivity($type, $action, $itemId, $itemTitle, $details = '', $adminId = null) {
+        $sql = "INSERT INTO activity_logs (type, action, item_id, item_title, details, admin_id) 
+                VALUES (:type, :action, :item_id, :item_title, :details, :admin_id)";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':type', $type);
+        $stmt->bindValue(':action', $action);
+        $stmt->bindValue(':item_id', $itemId, PDO::PARAM_INT);
+        $stmt->bindValue(':item_title', $itemTitle);
+        $stmt->bindValue(':details', $details);
+        $stmt->bindValue(':admin_id', $adminId, PDO::PARAM_INT);
+        return $stmt->execute();
     }
 }
 ?> 

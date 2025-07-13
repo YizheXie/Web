@@ -109,7 +109,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tags = $_POST['tags'] ?? '';
             $featuredImage = $_POST['featured_image'] ?? '';
             $isFeatured = isset($_POST['is_featured']) ? 1 : 0;
-            $db->createArticleWithExtras($title, $content, $excerpt, $categoryId, $_SESSION['admin_id'], $status, $tags, $featuredImage, $isFeatured);
+            $result = $db->createArticleWithExtras($title, $content, $excerpt, $categoryId, $_SESSION['admin_id'], $status, $tags, $featuredImage, $isFeatured);
+            if ($result) {
+                $articleId = $db->getConnection()->lastInsertId();
+                $statusText = $status === 'published' ? '已发布' : '草稿';
+                $db->logActivity('article', 'created', $articleId, $title, $statusText, $_SESSION['admin_id']);
+            }
             break;
             
         case 'update_article':
@@ -122,18 +127,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tags = $_POST['tags'] ?? '';
             $featuredImage = $_POST['featured_image'] ?? '';
             $isFeatured = isset($_POST['is_featured']) ? 1 : 0;
-            $db->updateArticleWithExtras($id, $title, $content, $excerpt, $categoryId, $status, $tags, $featuredImage, $isFeatured);
+            $result = $db->updateArticleWithExtras($id, $title, $content, $excerpt, $categoryId, $status, $tags, $featuredImage, $isFeatured);
+            if ($result) {
+                $statusText = $status === 'published' ? '已发布' : '草稿';
+                $db->logActivity('article', 'updated', $id, $title, "更新为: $statusText", $_SESSION['admin_id']);
+            }
             break;
             
         case 'delete_article':
             $id = $_POST['id'];
-            $db->deleteArticle($id);
+            $article = $db->getArticleForAdmin($id);
+            $result = $db->deleteArticle($id);
+            if ($result && $article) {
+                $db->logActivity('article', 'deleted', $id, $article['title'], "永久删除", $_SESSION['admin_id']);
+            }
             break;
             
         case 'toggle_featured':
             $id = $_POST['id'];
             $featured = $_POST['featured'] === '1';
-            $db->toggleFeaturedArticle($id, $featured);
+            $article = $db->getArticleForAdmin($id);
+            $result = $db->toggleFeaturedArticle($id, $featured);
+            if ($result && $article) {
+                $action = $featured ? '设为推荐' : '取消推荐';
+                $db->logActivity('article', 'featured_toggled', $id, $article['title'], $action, $_SESSION['admin_id']);
+            }
             break;
             
         case 'create_recommendation':
@@ -146,7 +164,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $date = $_POST['date'];
             $status = $_POST['status'];
             $sortOrder = $_POST['sort_order'] ?? 0;
-            $db->createRecommendation($title, $url, $image, $tags, $description, $category, $date, $status, $sortOrder);
+            $result = $db->createRecommendation($title, $url, $image, $tags, $description, $category, $date, $status, $sortOrder);
+            if ($result) {
+                $recId = $db->getConnection()->lastInsertId();
+                $statusText = $status === 'active' ? '已启用' : '已停用';
+                $db->logActivity('recommendation', 'created', $recId, $title, "$category - $statusText", $_SESSION['admin_id']);
+            }
             break;
             
         case 'update_recommendation':
@@ -160,18 +183,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $date = $_POST['date'];
             $status = $_POST['status'];
             $sortOrder = $_POST['sort_order'] ?? 0;
-            $db->updateRecommendation($id, $title, $url, $image, $tags, $description, $category, $date, $status, $sortOrder);
+            $result = $db->updateRecommendation($id, $title, $url, $image, $tags, $description, $category, $date, $status, $sortOrder);
+            if ($result) {
+                $statusText = $status === 'active' ? '已启用' : '已停用';
+                $db->logActivity('recommendation', 'updated', $id, $title, "$category - $statusText", $_SESSION['admin_id']);
+            }
             break;
             
         case 'delete_recommendation':
             $id = $_POST['id'];
-            $db->deleteRecommendation($id);
+            $rec = $db->getRecommendation($id);
+            $result = $db->deleteRecommendation($id);
+            if ($result && $rec) {
+                $db->logActivity('recommendation', 'deleted', $id, $rec['title'], "永久删除", $_SESSION['admin_id']);
+            }
             break;
             
         case 'update_recommendation_status':
             $id = $_POST['id'];
             $status = $_POST['status'];
-            $db->updateRecommendationStatus($id, $status);
+            $rec = $db->getRecommendation($id);
+            $result = $db->updateRecommendationStatus($id, $status);
+            if ($result && $rec) {
+                $action = $status === 'active' ? '已启用' : '已停用';
+                $db->logActivity('recommendation', 'status_changed', $id, $rec['title'], $action, $_SESSION['admin_id']);
+            }
             break;
     }
     
@@ -197,7 +233,8 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>后台管理 - Homepage</title>
+    <link rel="icon" href="../static/img/icon/icon-nav.png">
+    <title>后台管理系统</title>
     <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
@@ -264,7 +301,7 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                 <div class="card-header">
                     最近活动
                     <div class="activity-refresh">
-                        <small>实时更新</small>
+                        实时更新
                     </div>
                 </div>
                 <div class="card-body">
@@ -272,7 +309,7 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                         <div class="no-activities">
                             <div class="no-activities-icon">📊</div>
                             <div class="no-activities-text">暂无最近活动</div>
-                            <div class="no-activities-desc">当有新文章、评论或联系信息时，会在这里显示</div>
+                            <div class="no-activities-desc">当有新文章、推荐内容、评论或联系信息时，会在这里显示</div>
                         </div>
                     <?php else: ?>
                         <div class="activity-list">
@@ -293,9 +330,20 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                                     $typeNames = [
                                                         'article' => '文章',
                                                         'comment' => '评论',
-                                                        'contact' => '联系'
+                                                        'contact' => '联系',
+                                                        'recommendation' => '推荐'
+                                                    ];
+                                                    $actionNames = [
+                                                        'created' => '新增',
+                                                        'updated' => '编辑',
+                                                        'deleted' => '删除',
+                                                        'featured_toggled' => '推荐设置',
+                                                        'status_changed' => '状态修改'
                                                     ];
                                                     echo $typeNames[$activity['type']];
+                                                    if (isset($activity['action']) && isset($actionNames[$activity['action']])) {
+                                                        echo $actionNames[$activity['action']];
+                                                    }
                                                     ?>
                                                 </span>
                                                 <?php if ($activity['author']): ?>
@@ -311,7 +359,10 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                                         'rejected' => '已拒绝',
                                                         'new' => '新消息',
                                                         'read' => '已读',
-                                                        'replied' => '已回复'
+                                                        'replied' => '已回复',
+                                                        'active' => '活跃',
+                                                        'inactive' => '停用',
+                                                        'deleted' => '已删除'
                                                     ];
                                                     echo $statusNames[$activity['status']] ?? $activity['status'];
                                                     ?>
@@ -324,6 +375,7 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                             <?php endif; ?>
                                         </div>
                                     </div>
+
                                     <div class="activity-actions">
                                         <?php if ($activity['type'] === 'article'): ?>
                                             <a href="?tab=articles" class="activity-action" title="管理文章">
@@ -337,20 +389,26 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                             <a href="?tab=contacts" class="activity-action" title="管理联系信息">
                                                 <span>📧</span>
                                             </a>
+                                        <?php elseif ($activity['type'] === 'recommendation'): ?>
+                                            <a href="?tab=recommendations" class="activity-action" title="管理推荐内容">
+                                                <span>⭐</span>
+                                            </a>
                                         <?php endif; ?>
                                     </div>
+                                    
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
                     
-                    <div class="activity-footer">
+                    <!-- <div class="activity-footer">
                         <div class="btn-group">
                             <a href="?tab=articles" class="btn btn-primary">管理文章</a>
-                            <a href="?tab=comments" class="btn btn-success">审核评论</a>
-                            <a href="?tab=contacts" class="btn btn-warning">查看联系信息</a>
+                            <a href="?tab=recommendations" class="btn btn-success">管理推荐</a>
+                            <a href="?tab=comments" class="btn btn-warning">审核评论</a>
+                            <a href="?tab=contacts" class="btn btn-secondary">查看联系信息</a>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -449,7 +507,7 @@ $currentTab = $_GET['tab'] ?? 'dashboard';
                                 </td>
                                 <td><?php echo htmlspecialchars($recommendation['category']); ?></td>
                                 <td>
-                                    <span class="status-badge status-<?php echo $recommendation['status'] === 'active' ? 'published' : 'draft'; ?>">
+                                    <span class="status-badge status-<?php echo $recommendation['status'] === 'active' ? 'active' : 'inactive'; ?>">
                                         <?php echo $recommendation['status'] === 'active' ? '活跃' : '停用'; ?>
                                     </span>
                                 </td>
