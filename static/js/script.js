@@ -149,8 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 移动端分类菜单功能
     initMobileCategoryMenu();
     
-    // 随机名言功能
-    initRandomQuotes();
+    // 随机名言功能已移至 quotes.js
     
     // 联系表单验证功能
     initContactForm();
@@ -1115,56 +1114,3 @@ function initMobileCategoryMenu() {
     });
 }
 
-/**
- * 初始化随机名言功能。
- */
-function initRandomQuotes() {
-    const quoteBox = document.querySelector('.quote-box');
-    if (!quoteBox) return;
-    
-    const quotes = [
-        { content: "生活就像骑自行车，要保持平衡就得不断前进。" },
-        { content: "我不是一个特别有天赋的人，只是对问题特别好奇而已。" },
-        { content: "学习是一种态度，不是能力。" },
-        { content: "未来完全取决于你现在的努力。" },
-        { content: "人生如同写代码，看似结束的地方，其实是新的起点。" },
-        { content: "科技的目的是为人类提供更好的生活方式。" },
-        { content: "AI不是为了取代人类，而是为了增强人类的能力。" },
-        { content: "编程不仅是编写代码，更是在设计思想。" },
-        { content: "不要害怕犯错，害怕的是犯了同样的错。" },
-        { content: "每一个成功者都有一个开始。勇于开始，才能找到成功的路。" },
-        { content: "世界上只有一种真正的英雄主义，那就是在认清生活真相后依然热爱生活。" },
-        { content: "没有伞的孩子，必须努力奔跑。" },
-        { content: "当你感到悲伤时，最好是去学些什么东西。学习会使你永远立于不败之地。" },
-        { content: "如果你能梦想到，你就能实现它。" },
-        { content: "我们的征途是星辰大海。" }
-    ];
-    
-    function displayRandomQuote() {
-        const randomIndex = Math.floor(Math.random() * quotes.length);
-        const quote = quotes[randomIndex];
-        
-        const quoteContent = quoteBox.querySelector('.quote-content');
-        
-        if (quoteContent) {
-            quoteContent.textContent = quote.content;
-            
-            // 添加淡入动画
-            quoteContent.style.opacity = 0;
-            
-            setTimeout(() => {
-                quoteContent.style.transition = 'opacity 0.5s ease';
-                quoteContent.style.opacity = 1;
-            }, 100);
-        }
-    }
-    
-    // 初始显示一条名言
-    displayRandomQuote();
-    
-    // 点击刷新按钮更新名言
-    const refreshButton = quoteBox.querySelector('.quote-refresh button');
-    if (refreshButton) {
-        refreshButton.addEventListener('click', displayRandomQuote);
-    }
-}

@@ -782,5 +782,146 @@ class Database {
         $stmt->execute();
         return $stmt->fetch();
     }
+    
+    // ===== 关于我信息管理 =====
+    
+    // 获取所有关于我信息
+    public function getAllAboutInfo() {
+        $sql = "SELECT * FROM about_info ORDER BY sort_order ASC, id ASC";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+    
+    // 获取单个关于我信息
+    public function getAboutInfo($id) {
+        $sql = "SELECT * FROM about_info WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
+    
+    // 根据键名获取关于我信息
+    public function getAboutInfoByKey($key) {
+        $sql = "SELECT * FROM about_info WHERE section_key = :key AND is_active = 1";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':key', $key);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
+    
+    // 更新关于我信息
+    public function updateAboutInfo($id, $sectionName, $sectionKey, $content, $contentType = 'text', $sortOrder = 0, $isActive = true) {
+        $sql = "UPDATE about_info SET section_name = :section_name, section_key = :section_key, 
+                content = :content, content_type = :content_type, sort_order = :sort_order, is_active = :is_active 
+                WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->bindValue(':section_name', $sectionName);
+        $stmt->bindValue(':section_key', $sectionKey);
+        $stmt->bindValue(':content', $content);
+        $stmt->bindValue(':content_type', $contentType);
+        $stmt->bindValue(':sort_order', $sortOrder, PDO::PARAM_INT);
+        $stmt->bindValue(':is_active', $isActive, PDO::PARAM_BOOL);
+        return $stmt->execute();
+    }
+    
+    // 创建关于我信息
+    public function createAboutInfo($sectionName, $sectionKey, $content, $contentType = 'text', $sortOrder = 0, $isActive = true) {
+        $sql = "INSERT INTO about_info (section_name, section_key, content, content_type, sort_order, is_active) 
+                VALUES (:section_name, :section_key, :content, :content_type, :sort_order, :is_active)";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':section_name', $sectionName);
+        $stmt->bindValue(':section_key', $sectionKey);
+        $stmt->bindValue(':content', $content);
+        $stmt->bindValue(':content_type', $contentType);
+        $stmt->bindValue(':sort_order', $sortOrder, PDO::PARAM_INT);
+        $stmt->bindValue(':is_active', $isActive, PDO::PARAM_BOOL);
+        return $stmt->execute();
+    }
+    
+    // 删除关于我信息
+    public function deleteAboutInfo($id) {
+        $sql = "DELETE FROM about_info WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+    
+    // 切换关于我信息状态
+    public function toggleAboutInfoStatus($id, $isActive) {
+        $sql = "UPDATE about_info SET is_active = :is_active WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->bindValue(':is_active', $isActive, PDO::PARAM_BOOL);
+        return $stmt->execute();
+    }
+    
+    // ===== 网站配置管理 =====
+    
+    // 获取所有网站配置
+    public function getAllSiteConfig() {
+        $sql = "SELECT * FROM site_config ORDER BY sort_order ASC, id ASC";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+    
+    // 获取单个网站配置
+    public function getSiteConfig($id) {
+        $sql = "SELECT * FROM site_config WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
+    
+    // 根据键名获取网站配置
+    public function getSiteConfigByKey($key) {
+        $sql = "SELECT * FROM site_config WHERE config_key = :key";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':key', $key);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
+    
+    // 更新网站配置
+    public function updateSiteConfig($id, $configKey, $configValue, $configType = 'text', $description = '', $sortOrder = 0) {
+        $sql = "UPDATE site_config SET config_key = :config_key, config_value = :config_value, 
+                config_type = :config_type, description = :description, sort_order = :sort_order 
+                WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->bindValue(':config_key', $configKey);
+        $stmt->bindValue(':config_value', $configValue);
+        $stmt->bindValue(':config_type', $configType);
+        $stmt->bindValue(':description', $description);
+        $stmt->bindValue(':sort_order', $sortOrder, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+    
+    // 创建网站配置
+    public function createSiteConfig($configKey, $configValue, $configType = 'text', $description = '', $sortOrder = 0) {
+        $sql = "INSERT INTO site_config (config_key, config_value, config_type, description, sort_order) 
+                VALUES (:config_key, :config_value, :config_type, :description, :sort_order)";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':config_key', $configKey);
+        $stmt->bindValue(':config_value', $configValue);
+        $stmt->bindValue(':config_type', $configType);
+        $stmt->bindValue(':description', $description);
+        $stmt->bindValue(':sort_order', $sortOrder, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+    
+    // 删除网站配置
+    public function deleteSiteConfig($id) {
+        $sql = "DELETE FROM site_config WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+    
+
 }
 ?> 

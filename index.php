@@ -1,9 +1,24 @@
 <?php
 require_once 'database.php';
+require_once 'site_config_helper.php';
 $db = Database::getInstance();
 
 // Get recent articles for homepage
 $recentArticles = $db->getArticles(3);
+
+// 获取网站配置
+$location = SiteConfigHelper::getLocation();
+$educationInfo = SiteConfigHelper::getEducationInfo();
+$personalTags = SiteConfigHelper::getPersonalTags();
+$timelineEvents = SiteConfigHelper::getTimelineEvents();
+$welcomeName = SiteConfigHelper::getWelcomeName();
+$welcomeDesc1 = SiteConfigHelper::getWelcomeDescription1();
+$welcomeDesc2 = SiteConfigHelper::getWelcomeDescription2();
+$email = SiteConfigHelper::getEmail();
+$githubUrl = SiteConfigHelper::getGithubUrl();
+$wechatQr = SiteConfigHelper::getWechatQr();
+$googleScholar = SiteConfigHelper::getGoogleScholar();
+$orcid = SiteConfigHelper::getOrcid();
 ?>
 
 <!DOCTYPE html>
@@ -12,7 +27,7 @@ $recentArticles = $db->getArticles(3);
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title> Homepage</title>
+	<title><?php echo htmlspecialchars(SiteConfigHelper::getSiteTitle()); ?></title>
 	<link rel="icon" href="./static/img/icon/icon-nav.png">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<link rel="stylesheet" href="./static/css/root.css">
@@ -31,96 +46,61 @@ $recentArticles = $db->getArticles(3);
 			<div class="logo">
 			</div>
 			<div class="left-div left-des">
-				<div class="left-des-item">
-					<svg t="1705773709627" class="icon" viewBox="0 0 1024 1024" version="1.1"
-						xmlns="http://www.w3.org/2000/svg" p-id="1478">
-						<path
-							d="M512 249.976471c-99.388235 0-180.705882 81.317647-180.705882 180.705882s81.317647 180.705882 180.705882 180.705882 180.705882-81.317647 180.705882-180.705882-81.317647-180.705882-180.705882-180.705882z m0 301.17647c-66.258824 0-120.470588-54.211765-120.470588-120.470588s54.211765-120.470588 120.470588-120.470588 120.470588 54.211765 120.470588 120.470588-54.211765 120.470588-120.470588 120.470588z"
-							p-id="1479"></path>
-						<path
-							d="M512 39.152941c-216.847059 0-391.529412 174.682353-391.529412 391.529412 0 349.364706 391.529412 572.235294 391.529412 572.235294s391.529412-222.870588 391.529412-572.235294c0-216.847059-174.682353-391.529412-391.529412-391.529412z m0 891.482353C424.658824 873.411765 180.705882 686.682353 180.705882 430.682353c0-183.717647 147.576471-331.294118 331.294118-331.294118s331.294118 147.576471 331.294118 331.294118c0 256-243.952941 442.729412-331.294118 499.952941z"
-							p-id="1480"></path>
-					</svg>
-					China-Hainan
-				</div>
-				<div class="left-des-item">
-					<svg t="1705773906032" class="icon" viewBox="0 0 1024 1024" version="1.1"
-						xmlns="http://www.w3.org/2000/svg" p-id="2474">
-						<path
-							d="M729.6 234.666667H294.4V157.866667a51.2 51.2 0 0 1 51.2-51.2h332.8a51.2 51.2 0 0 1 51.2 51.2v76.8z m179.2 51.2a51.2 51.2 0 0 1 51.2 51.2v512a51.2 51.2 0 0 1-51.2 51.2H115.2a51.2 51.2 0 0 1-51.2-51.2v-512a51.2 51.2 0 0 1 51.2-51.2h793.557333z m-768 172.032c0 16.384 13.312 29.696 29.696 29.696h683.008a29.696 29.696 0 1 0 0-59.392H170.410667a29.696 29.696 0 0 0-29.696 29.696z m252.416 118.784c0 16.384 13.312 29.696 29.696 29.696h178.176a29.696 29.696 0 1 0 0-59.392H422.912a29.738667 29.738667 0 0 0-29.696 29.696z"
-							p-id="2475"></path>
-					</svg>
-					MUC & CityU MAC
-				</div>
+				                <div class="left-des-item">
+                    <svg t="1705773709627" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                        xmlns="http://www.w3.org/2000/svg" p-id="1478">
+                        <path
+                            d="M512 249.976471c-99.388235 0-180.705882 81.317647-180.705882 180.705882s81.317647 180.705882 180.705882 180.705882 180.705882-81.317647 180.705882-180.705882-81.317647-180.705882-180.705882-180.705882z m0 301.17647c-66.258824 0-120.470588-54.211765-120.470588-120.470588s54.211765-120.470588 120.470588-120.470588 120.470588 54.211765 120.470588 120.470588-54.211765 120.470588-120.470588 120.470588z"
+                            p-id="1479"></path>
+                        <path
+                            d="M512 39.152941c-216.847059 0-391.529412 174.682353-391.529412 391.529412 0 349.364706 391.529412 572.235294 391.529412 572.235294s391.529412-222.870588 391.529412-572.235294c0-216.847059-174.682353-391.529412-391.529412-391.529412z m0 891.482353C424.658824 873.411765 180.705882 686.682353 180.705882 430.682353c0-183.717647 147.576471-331.294118 331.294118-331.294118s331.294118 147.576471 331.294118 331.294118c0 256-243.952941 442.729412-331.294118 499.952941z"
+                            p-id="1480"></path>
+                    </svg>
+                    <?php echo htmlspecialchars($location); ?>
+                </div>
+				                <div class="left-des-item">
+                    <svg t="1705773906032" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                        xmlns="http://www.w3.org/2000/svg" p-id="2474">
+                        <path
+                            d="M729.6 234.666667H294.4V157.866667a51.2 51.2 0 0 1 51.2-51.2h332.8a51.2 51.2 0 0 1 51.2 51.2v76.8z m179.2 51.2a51.2 51.2 0 0 1 51.2 51.2v512a51.2 51.2 0 0 1-51.2 51.2H115.2a51.2 51.2 0 0 1-51.2-51.2v-512a51.2 51.2 0 0 1 51.2-51.2h793.557333z m-768 172.032c0 16.384 13.312 29.696 29.696 29.696h683.008a29.696 29.696 0 1 0 0-59.392H170.410667a29.696 29.696 0 0 0-29.696 29.696z m252.416 118.784c0 16.384 13.312 29.696 29.696 29.696h178.176a29.696 29.696 0 1 0 0-59.392H422.912a29.738667 29.738667 0 0 0-29.696 29.696z"
+                            p-id="2475"></path>
+                    </svg>
+                    <?php echo htmlspecialchars($educationInfo); ?>
+                </div>
 			</div>
-			<div class="left-div left-tag">
-				<div class="left-tag-item">大二牲
-				</div>
-				<div class="left-tag-item">AI
-				</div>
-				<div class="left-tag-item">LLM
-				</div>
-				<div class="left-tag-item">麦门
-				</div>
-				<div class="left-tag-item">爱睡觉
-				</div>
-			</div>
-			<div class="left-div left-time">
-				<ul id="line">
-					<li>
-						<div class="focus"></div>
-						<div>转世成为异世界美男</div>
-						<div>2004.10</div>
-					</li>
-					<li>
-						<div class="focus"></div>
-						<div>发现异界没有五险一金</div>
-						<div>2010.01</div>
-					</li>
-					<li>
-						<div class="focus"></div>
-						<div>被精灵公主倒追导致王国通货膨胀</div>
-						<div>2018.11</div>
-					</li>
-					<li>
-						<div class="focus"></div>
-						<div>教兽人用PPT汇报工作</div>
-						<div>2025.11</div>
-					</li>
-					<li>
-						<div class="focus"></div>
-						<div>异界黑马学院开业啦！</div>
-						<div>2030.06</div>
-					</li>
-					<li>
-						<div class="focus"></div>
-						<div>35岁被学院优化</div>
-						<div>2039.04</div>
-					</li>
-					<li>
-						<div class="focus"></div>
-						<div>和史莱姆一起投简历</div>
-						<div>- now</div>
-					</li>
-				</ul>
-			</div>
+			            <div class="left-div left-tag">
+                <?php foreach ($personalTags as $tag): ?>
+                <div class="left-tag-item"><?php echo htmlspecialchars($tag); ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
+			            <div class="left-div left-time">
+                <ul id="line">
+                    <?php foreach ($timelineEvents as $event): ?>
+                    <li>
+                        <div class="focus"></div>
+                        <div><?php echo htmlspecialchars($event['event']); ?></div>
+                        <div><?php echo htmlspecialchars($event['date']); ?></div>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
 		</div>
 		<!-- 右侧主内容区 -->
 		<div class="right">
 			<header>
 				<div class="index-logo">
 				</div>
-				<div class="welcome">
-					Hello I' m <span class="gradientText">Yizhe Xie</span>
-				</div>
-				<div class="description">😊 Jack of all trades, <span class="purpleText">Master of None</span>
-				</div>
-				<div class="description">🤗 Life was like a box of <span class="purpleText">Chocolate</span> , you <span
-						class="purpleText">Never</span> know what you're gonna get.
-				</div>
+				                <div class="welcome">
+                    Hello I' m <span class="gradientText"><?php echo htmlspecialchars($welcomeName); ?></span>
+                </div>
+                <div class="description"><?php echo htmlspecialchars($welcomeDesc1); ?>
+                </div>
+                <div class="description"><?php echo htmlspecialchars($welcomeDesc2); ?>
+                </div>
 
 				<div class="iconContainer">
-					<a class="iconItem" onclick="" href="https://github.com/YizheXie">
+					                    <a class="iconItem" onclick="" href="<?php echo htmlspecialchars($githubUrl); ?>">
 						<svg t="1704870335945" class="icon" viewBox="0 0 1024 1024" version="1.1"
 							xmlns="http://www.w3.org/2000/svg" p-id="2487">
 							<path
@@ -128,7 +108,7 @@ $recentArticles = $db->getArticles(3);
 								p-id="2488"></path>
 						</svg>
 						<div class="iconTip">Github</div>
-					</a><a class="iconItem" onclick="" href="mailto:xieyizhe66@gmail.com">
+					                    </a><a class="iconItem" onclick="" href="mailto:<?php echo htmlspecialchars($email); ?>">
 						<svg t="1704870588438" class="icon" viewBox="0 0 1024 1024" version="1.1"
 							xmlns="http://www.w3.org/2000/svg" p-id="3174">
 							<path
@@ -136,7 +116,7 @@ $recentArticles = $db->getArticles(3);
 								p-id="3175"></path>
 						</svg>
 						<div class="iconTip">Mail</div>
-					</a><a class="iconItem" onclick="pop('./static/img/wechat.jpg')" href="javascript:void(0)">
+					                    </a><a class="iconItem" onclick="pop('<?php echo htmlspecialchars($wechatQr); ?>')" href="javascript:void(0)">
 						<svg t="1742911204889" class="icon" viewBox="0 0 1024 1024" version="1.1"
 							xmlns="http://www.w3.org/2000/svg" p-id="4614" width="200" height="200">
 							<path
@@ -147,7 +127,7 @@ $recentArticles = $db->getArticles(3);
 								p-id="4616"></path>
 						</svg>
 						<div class="iconTip">Wechat</div>
-					</a><a class="iconItem" onclick="" href="https://scholar.google.com/">
+					                    </a><a class="iconItem" onclick="" href="<?php echo htmlspecialchars($googleScholar); ?>">
 						<svg t="1742911302568" class="icon" viewBox="0 0 1024 1024" version="1.1"
 							xmlns="http://www.w3.org/2000/svg" p-id="9006" width="200" height="200">
 							<path
@@ -155,7 +135,7 @@ $recentArticles = $db->getArticles(3);
 								p-id="9007"></path>
 						</svg>
 						<div class="iconTip">Scholar</div>
-					</a><a class="iconItem" onclick="" href="https://orcid.org/0009-0009-8321-5982">
+					                    </a><a class="iconItem" onclick="" href="<?php echo htmlspecialchars($orcid); ?>">
 						<svg t="1742918989426" class="icon" viewBox="0 0 1024 1024" version="1.1"
 							xmlns="http://www.w3.org/2000/svg" p-id="4627" width="200" height="200">
 							<path
@@ -291,17 +271,18 @@ $recentArticles = $db->getArticles(3);
 		</div>
 	</div>
 
-	<!-- 尾注 -->
-	<footer>
-		Yizhe Xie &copy; 2025 | ID: 23160151
-	</footer>
+	    <!-- 尾注 -->
+    <footer>
+        <?php echo htmlspecialchars(SiteConfigHelper::getFooterText()); ?>
+    </footer>
 
 	<div class="tc">
 		<div onclick="" class="tc-main">
 			<img class="tc-img" src="" alt="" srcset="">
 		</div>
 	</div>
+	<script src="./static/js/script.js"></script>
+	<script src="./static/js/quotes.js"></script>
 </body>
-<script src="./static/js/script.js"> </script>
 
 </html>
