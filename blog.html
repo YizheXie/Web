@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>My Blog</title>
+    <link rel="icon" href="./static/img/icon/icon-nav.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="./static/css/style.css">
+    <link rel="stylesheet" href="./static/css/root.css">
+    <link rel="stylesheet" href="./static/css/blog.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/toolbar/prism-toolbar.min.css">
+</head>
+
+<body>
+    <div id="loading">
+        <div id="loading-center"></div>
+    </div>
+    <div class="filter"></div>
+
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="./static/img/icon/icon-nav.png" alt="Logo">
+                    <span>Yizhe Xie</span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">首页</a>
+                <a href="blog.html" class="active">博客</a>
+                <a href="articles.html">推荐阅读</a>
+                <a href="about.html">关于我</a>
+            </div>
+            <div class="nav-toggle">
+                <div class="toggle-line"></div>
+                <div class="toggle-line"></div>
+                <div class="toggle-line"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main">
+        <div class="left">
+            <div class="logo" style="background-image: url(./static/img/selfie.jpg);">
+            </div>
+            <div class="left-div left-des">
+                <div class="left-des-item">
+                    <svg t="1705773709627" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                        xmlns="http://www.w3.org/2000/svg" p-id="1478">
+                        <path
+                            d="M512 249.976471c-99.388235 0-180.705882 81.317647-180.705882 180.705882s81.317647 180.705882 180.705882 180.705882 180.705882-81.317647 180.705882-180.705882-81.317647-180.705882-180.705882-180.705882z m0 301.17647c-66.258824 0-120.470588-54.211765-120.470588-120.470588s54.211765-120.470588 120.470588-120.470588 120.470588 54.211765 120.470588 120.470588-54.211765 120.470588-120.470588 120.470588z"
+                            p-id="1479"></path>
+                        <path
+                            d="M512 39.152941c-216.847059 0-391.529412 174.682353-391.529412 391.529412 0 349.364706 391.529412 572.235294 391.529412 572.235294s391.529412-222.870588 391.529412-572.235294c0-216.847059-174.682353-391.529412-391.529412-391.529412z m0 891.482353C424.658824 873.411765 180.705882 686.682353 180.705882 430.682353c0-183.717647 147.576471-331.294118 331.294118-331.294118s331.294118 147.576471 331.294118 331.294118c0 256-243.952941 442.729412-331.294118 499.952941z"
+                            p-id="1480"></path>
+                    </svg>
+                    China-Hainan
+                </div>
+                <div class="left-des-item">
+                    <svg t="1705773906032" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                        xmlns="http://www.w3.org/2000/svg" p-id="2474">
+                        <path
+                            d="M729.6 234.666667H294.4V157.866667a51.2 51.2 0 0 1 51.2-51.2h332.8a51.2 51.2 0 0 1 51.2 51.2v76.8z m179.2 51.2a51.2 51.2 0 0 1 51.2 51.2v512a51.2 51.2 0 0 1-51.2 51.2H115.2a51.2 51.2 0 0 1-51.2-51.2v-512a51.2 51.2 0 0 1 51.2-51.2h793.557333z m-768 172.032c0 16.384 13.312 29.696 29.696 29.696h683.008a29.696 29.696 0 1 0 0-59.392H170.410667a29.696 29.696 0 0 0-29.696 29.696z m252.416 118.784c0 16.384 13.312 29.696 29.696 29.696h178.176a29.696 29.696 0 1 0 0-59.392H422.912a29.738667 29.738667 0 0 0-29.696 29.696z"
+                            p-id="2475"></path>
+                    </svg>
+                    MUC & CityU MAC
+                </div>
+            </div>
+            <div class="left-div">
+                <div class="category-title">博客分类</div>
+                <div class="category-list">
+                    <div><a href="javascript:void(0)" class="category-link active" data-category="all">全部文章<span
+                                class="category-count">(4)</span></a></div>
+                    <div><a href="javascript:void(0)" class="category-link" data-category="tech">技术分享<span
+                                class="category-count">(2)</span></a></div>
+                    <div><a href="javascript:void(0)" class="category-link" data-category="life">生活随笔<span
+                                class="category-count">(1)</span></a></div>
+                    <div><a href="javascript:void(0)" class="category-link" data-category="reading">读书笔记<span
+                                class="category-count">(1)</span></a></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right">
+            <header>
+                <div class="index-logo" style="background-image: url(./static/img/selfie.jpg);">
+                </div>
+                <div class="welcome">
+                    My Blog
+                </div>
+                <div class="description">✨ 记录学习与生活 <span class="purpleText">Share & Learn</span>
+                </div>
+
+
+                <div class="iconContainer">
+                    <a class="iconItem" href="index.html">
+                        <svg t="1742999202713" class="icon" viewBox="0 0 1029 1024" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" p-id="1490" width="200" height="200">
+                            <path
+                                d="M1001.423238 494.592q21.504 20.48 22.528 45.056t-16.384 40.96q-19.456 17.408-45.056 16.384t-40.96-14.336q-5.12-4.096-31.232-28.672t-62.464-58.88-77.824-73.728-78.336-74.24-63.488-60.416-33.792-31.744q-32.768-29.696-64.512-28.672t-62.464 28.672q-10.24 9.216-38.4 35.328t-65.024 60.928-77.824 72.704-75.776 70.656-59.904 55.808-30.208 27.136q-15.36 12.288-40.96 13.312t-44.032-15.36q-20.48-18.432-19.456-44.544t17.408-41.472q6.144-6.144 37.888-35.84t75.776-70.656 94.72-88.064 94.208-88.064 74.752-70.144 36.352-34.304q38.912-37.888 83.968-38.4t76.8 30.208q6.144 5.12 25.6 24.064t47.616 46.08 62.976 60.928 70.656 68.096 70.144 68.096 62.976 60.928 48.128 46.592zM447.439238 346.112q25.6-23.552 61.44-25.088t64.512 25.088q3.072 3.072 18.432 17.408l38.912 35.84q22.528 21.504 50.688 48.128t57.856 53.248q68.608 63.488 153.6 142.336l0 194.56q0 22.528-16.896 39.936t-45.568 18.432l-193.536 0 0-158.72q0-33.792-31.744-33.792l-195.584 0q-17.408 0-24.064 10.24t-6.656 23.552q0 6.144-0.512 31.232t-0.512 53.76l0 73.728-187.392 0q-29.696 0-47.104-13.312t-17.408-37.888l0-203.776q83.968-76.8 152.576-139.264 28.672-26.624 57.344-52.736t52.224-47.616 39.424-36.352 19.968-18.944z"
+                                p-id="1491"></path>
+                        </svg>
+                        <div class="iconTip">Home</div>
+                    </a><a class="iconItem" href="#">
+                        <svg t="1704870335945" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" p-id="2487">
+                            <path
+                                d="M511.6 76.3C264.3 76.2 64 276.4 64 523.5 64 718.9 189.3 885 363.8 946c23.5 5.9 19.9-10.8 19.9-22.2v-77.5c-135.7 15.9-141.2-73.9-150.3-88.9C215 726 171.5 718 184.5 703c30.9-15.9 62.4 4 98.9 57.9 26.4 39.1 77.9 32.5 104 26 5.7-23.5 17.9-44.5 34.7-60.8-140.6-25.2-199.2-111-199.2-213 0-49.5 16.3-95 48.3-131.7-20.4-60.5 1.9-112.3 4.9-120 58.1-5.2 118.5 41.6 123.2 45.3 33-8.9 70.7-13.6 112.9-13.6 42.4 0 80.2 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.3-43.9 2.9 7.7 24.7 58.3 5.5 118 32.4 36.8 48.9 82.7 48.9 132.3 0 102.2-59 188.1-200 212.9 23.5 23.2 38.1 55.4 38.1 91v112.5c0.8 9 0 17.9 15 17.9 177.1-59.7 304.6-227 304.6-424.1 0-247.2-200.4-447.3-447.5-447.3z"
+                                p-id="2488"></path>
+                        </svg>
+                        <div class="iconTip">Github</div>
+                    </a><a class="iconItem" href="mailto:xieyizhe66@gmail.com">
+                        <svg t="1704870588438" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" p-id="3174">
+                            <path
+                                d="M926.47619 355.644952V780.190476a73.142857 73.142857 0 0 1-73.142857 73.142857H170.666667a73.142857 73.142857 0 0 1-73.142857-73.142857V355.644952l304.103619 257.828572a170.666667 170.666667 0 0 0 220.745142 0L926.47619 355.644952zM853.333333 170.666667a74.044952 74.044952 0 0 1 26.087619 4.778666 72.704 72.704 0 0 1 30.622477 22.186667 73.508571 73.508571 0 0 1 10.678857 17.67619c3.169524 7.509333 5.12 15.652571 5.607619 24.210286L926.47619 243.809524v24.380952L559.469714 581.241905a73.142857 73.142857 0 0 1-91.306666 2.901333l-3.632762-2.925714L97.52381 268.190476v-24.380952a72.899048 72.899048 0 0 1 40.155428-65.292191A72.97219 72.97219 0 0 1 170.666667 170.666667h682.666666z"
+                                p-id="3175"></path>
+                        </svg>
+                        <div class="iconTip">Mail</div>
+                    </a><a class="switch" href="javascript:void(0)">
+                        <div class="onoffswitch">
+                            <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch"
+                                checked>
+                            <label class="onoffswitch-label" for="myonoffswitch">
+                                <span class="onoffswitch-inner"></span>
+                                <span class="onoffswitch-switch"></span>
+                            </label>
+                        </div>
+                    </a>
+                </div>
+
+            </header>
+
+            <main>
+                <div class="title">
+                    <svg t="1742999449737" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                        xmlns="http://www.w3.org/2000/svg" p-id="5674" width="200" height="200">
+                        <path
+                            d="M51.8 896.1c0 22.6 18.3 41 41 41h738.3c22.6 0 41-18.3 41-41 0-22.6-18.3-41-41-41H92.8c-22.7 0-41 18.4-41 41zM51.8 155.2c0 22.6 18.3 41 41 41h668.1c22.6 0 41-18.3 41-41 0-22.6-18.3-41-41-41H92.8c-22.7 0-41 18.4-41 41zM388.9 737.2c19.5 19.5 51.2 19.5 70.7 0l509.3-509.3c19.5-19.5 19.5-51.2 0-70.7s-51.2-19.5-70.7 0L388.9 666.4c-19.6 19.6-19.6 51.2 0 70.8z"
+                            p-id="5675"></path>
+                        <path
+                            d="M832.4 935.7c22.6 0 41-18.3 41-41V531c0-22.6-18.3-41-41-41-22.6 0-41 18.3-41 41v363.8c0 22.6 18.3 40.9 41 40.9zM91.5 935.7c22.6 0 41-18.3 41-41V156.5c0-22.6-18.3-41-41-41-22.6 0-41 18.3-41 41v738.3c0 22.6 18.3 40.9 41 40.9z"
+                            p-id="5676"></path>
+                    </svg>
+                    最新文章
+                </div>
+
+                <div class="blog-search">
+                    <svg class="search-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="搜索文章..." />
+                </div>
+
+                <!-- 移动端分类菜单 -->
+                <div class="mobile-category-menu">
+                    <div class="mobile-category-btn">
+                        <svg t="1743066703060" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" p-id="1523" width="200" height="200">
+                            <path
+                                d="M575.68 736a160.32 160.32 0 1 0 160.32-160.32H599.893333c-13.461333 0-24.192 10.752-24.192 24.192V736zM736 533.333333A202.666667 202.666667 0 1 1 533.333333 736V599.893333A66.432 66.432 0 0 1 599.872 533.333333H736zM490.666667 736a202.666667 202.666667 0 1 1-202.666667-202.666667h136.128A66.432 66.432 0 0 1 490.666667 599.872V736z m-202.666667-160.32a160.32 160.32 0 1 0 160.32 160.32V599.893333c0-13.44-10.730667-24.192-24.192-24.192H288zM533.333333 287.978667A202.666667 202.666667 0 1 1 736 490.666667H599.893333A66.432 66.432 0 0 1 533.333333 424.128V288z m202.666667 160.341333a160.32 160.32 0 1 0-160.32-160.32v136.128c0 13.44 10.730667 24.192 24.192 24.192H736zM448.32 288a160.32 160.32 0 1 0-160.32 160.32h136.128c13.461333 0 24.192-10.752 24.192-24.192V288zM288 490.666667A202.666667 202.666667 0 1 1 490.666667 288v136.128A66.432 66.432 0 0 1 424.128 490.666667H288z"
+                                p-id="1524"></path>
+                        </svg>
+                        博客分类
+                    </div>
+                    <div class="mobile-category-dropdown">
+                        <div><a href="javascript:void(0)" class="category-link active" data-category="all">全部文章<span
+                                    class="category-count">(4)</span></a></div>
+                        <div><a href="javascript:void(0)" class="category-link" data-category="tech">技术分享<span
+                                    class="category-count">(2)</span></a></div>
+                        <div><a href="javascript:void(0)" class="category-link" data-category="life">生活随笔<span
+                                    class="category-count">(1)</span></a></div>
+                        <div><a href="javascript:void(0)" class="category-link" data-category="reading">读书笔记<span
+                                    class="category-count">(1)</span></a></div>
+                    </div>
+                </div>
+
+                <!-- 博客文章列表 第1页 -->
+                <div class="blog-page active" data-page="1">
+                    <!-- 博客文章 AI技术 -->
+                    <article class="blog-post blog-collapsed" data-id="1" data-category="tech">
+                        <div class="blog-title" onclick="toggleBlogExpand(this.parentNode)">人工智能如何改变我们的生活</div>
+                        <div class="blog-meta">
+                            <span class="blog-date">2023-05-15</span>
+                            <span class="blog-tag">AI</span>
+                            <span class="blog-tag">技术</span>
+                        </div>
+                        <div class="notice-box info-box">⚠️ 本文由 AI 生成，请注意甄别信息的准确性 </div>
+                        <div class="blog-content">
+                            人工智能正以前所未有的速度发展，从语音助手到自动驾驶汽车，AI技术正在逐步融入我们的日常生活。本文将探讨AI如何改变我们的工作、生活和社交方式，以及未来可能的发展趋势。
+                            <br><br>
+                            <strong>AI改变工作方式</strong><br>
+                            人工智能正在改变各行各业的工作方式。自动化流程、智能分析和预测性维护等AI应用已经在制造业、金融服务、医疗保健和零售业等领域广泛应用。在办公环境中，AI助手可以帮助安排会议、撰写电子邮件和管理任务列表，提高工作效率。
+                            <br><br>
+                            <blockquote>
+                                人工智能不仅仅是一种技术，它是一场彻底的革命，正在重塑我们与世界交互的方式。——安德鲁·恩吉，DeepMind首席执行官
+                            </blockquote>
+                            <br>
+                            <strong>影响日常生活</strong><br>
+                            在家庭中，智能家居设备如智能音箱、恒温器和安全系统正在变得越来越普遍。这些设备可以学习用户的行为模式并相应地调整设置，提供更舒适和节能的生活环境。同时，AI驱动的个人助手如Siri、Alexa和Google
+                            Assistant正在成为我们日常生活的一部分，帮助我们获取信息、控制设备和完成任务。
+                            <br><br>
+                            <strong>未来展望</strong><br>
+                            随着AI技术的不断发展，我们可以期待看到更多创新应用出现。从更加智能的城市基础设施到个性化医疗和教育，AI有潜力解决许多社会挑战并创造新的机会。然而，我们也需要考虑技术的伦理影响，确保AI的发展方向对人类社会有益。
+                        </div>
+                        <a href="javascript:void(0)" class="blog-more"
+                            onclick="toggleBlogExpand(this.parentNode)">阅读更多</a>
+                    </article>
+
+                    <!-- 博客文章 海南之旅 -->
+                    <article class="blog-post blog-collapsed" data-id="2" data-category="life">
+                        <div class="blog-title" onclick="toggleBlogExpand(this.parentNode)">海南之旅：椰风海韵的热带天堂</div>
+                        <div class="blog-meta">
+                            <span class="blog-date">2023-04-22</span>
+                            <span class="blog-tag">旅行</span>
+                            <span class="blog-tag">生活</span>
+                        </div>
+                        <div class="notice-box info-box">⚠️ 本文由 AI 生成，请注意甄别信息的准确性 </div>
+                        <div class="blog-content">
+                            上个月有幸前往海南岛旅行，感受了那里独特的热带风情。椰林海滩、新鲜的海鲜美食以及当地人的热情好客，都给我留下了深刻的印象。这篇文章将分享我在海南的所见所闻及旅行攻略。
+                            <br><br>
+                            <strong>三亚湾的黄昏</strong><br>
+                            三亚湾的日落是我此行最难忘的记忆之一。当金色的阳光洒在平静的海面上，远处的椰树剪影与天空交织成一幅美丽的画卷。沿着海滩漫步，感受海风的轻抚，是一种难以言喻的享受。
+                            <br><br>
+                            <strong>热带水果的盛宴</strong><br>
+                            在海南，各种热带水果应有尽有。新鲜的芒果、菠萝、龙眼和荔枝等水果随处可见，价格也比内地便宜很多。如果你是水果爱好者，一定不要错过当地的水果市场，那里有最新鲜的水果供你选择。
+                            <br><br>
+                            <strong>当地美食推荐</strong><br>
+                            海南的美食以海鲜和本地特色菜为主。文昌鸡、加积鸭、和乐蟹都是值得一试的特色菜。而清补凉、椰子饭等甜品也非常受欢迎。对于喜欢尝试不同烹饪风格的人来说，海南的美食之旅绝对是一次难忘的体验。
+                        </div>
+                        <a href="javascript:void(0)" class="blog-more"
+                            onclick="toggleBlogExpand(this.parentNode)">阅读更多</a>
+                    </article>
+                </div>
+
+                <!-- 博客文章列表 第2页 -->
+                <div class="blog-page" data-page="2">
+                    <!-- 博客文章 响应式设计 -->
+                    <article class="blog-post blog-collapsed" data-id="3" data-category="tech">
+                        <div class="blog-title" onclick="toggleBlogExpand(this.parentNode)">Web开发中的响应式设计实践</div>
+                        <div class="blog-meta">
+                            <span class="blog-date">2023-03-10</span>
+                            <span class="blog-tag">编程</span>
+                            <span class="blog-tag">Web</span>
+                        </div>
+                        <div class="notice-box info-box">⚠️ 本文由 AI 生成，请注意甄别信息的准确性 </div>
+                        <div class="blog-content">
+                            随着移动设备使用率的提高，响应式网页设计变得越来越重要。本文将分享一些响应式设计的核心原则和实用技巧，包括流动网格、弹性图片和媒体查询的应用，帮助你打造适应各种屏幕尺寸的完美网站。
+                            <br><br>
+                            <strong>流动网格的实现</strong><br>
+                            流动网格是响应式设计的基础，它允许布局根据屏幕大小自动调整。使用百分比而非固定像素值来定义元素宽度是实现流动网格的关键。例如，在一个两列布局中，你可以设置主内容区域宽度为70%，侧边栏宽度为30%，而不是使用固定像素值。
+                            <br><br>
+                            <pre class="line-numbers"><code class="language-javascript">.main-content { width: 70%; float: left; }
+.sidebar { width: 30%; float: right; }</code></pre>
+                            <br><br>
+                            <strong>弹性图片技术</strong><br>
+                            在响应式设计中，图片和媒体元素也需要能够根据容器大小调整尺寸。通过简单的CSS规则，可以使图片自动缩放以适应其容器：
+                            <br><br>
+                            <pre
+                                class="line-numbers"><code class="language-javascript">img { max-width: 100%; height: auto; }</code></pre>
+                            <br><br>
+                            <strong>媒体查询的巧妙应用</strong><br>
+                            媒体查询允许你根据设备特性（如屏幕宽度、设备方向等）应用不同的样式。这是创建真正响应式设计的关键技术。以下是一些常用的断点设置：
+                            <br><br>
+                            <pre class="line-numbers"><code class="language-css">/* 移动设备 */
+@media (max-width: 768px) {
+  .main-content, .sidebar { 
+    width: 100%;
+    float: none;
+  }
+}</code></pre>
+                        </div>
+                        <a href="javascript:void(0)" class="blog-more"
+                            onclick="toggleBlogExpand(this.parentNode)">阅读更多</a>
+                    </article>
+
+                    <!-- 博客文章 原子习惯 -->
+                    <article class="blog-post blog-collapsed" data-id="4" data-category="reading">
+                        <div class="blog-title" onclick="toggleBlogExpand(this.parentNode)">读《原子习惯》有感</div>
+                        <div class="blog-meta">
+                            <span class="blog-date">2023-02-18</span>
+                            <span class="blog-tag">读书</span>
+                            <span class="blog-tag">随笔</span>
+                        </div>
+                        <div class="notice-box info-box">⚠️ 本文由 AI 生成，请注意甄别信息的准确性 </div>
+                        <div class="blog-content">
+                            最近读完了詹姆斯·克利尔的《原子习惯》，这本书通过简单而实用的方法讲解了如何养成良好习惯并戒除坏习惯。书中的"身份认同"理论和"习惯叠加"技巧给我带来了不少启发，本文将分享我的读书心得和实践体会。
+                            <br><br>
+                            <strong>习惯的四个阶段</strong><br>
+                            克利尔在书中提出了习惯的四个阶段：提示、渴望、反应和奖励。理解这四个阶段对于有效地建立新习惯或打破旧习惯至关重要。例如，如果想养成晨跑的习惯，可以将跑鞋放在床边（提示），想象晨跑后的精力充沛（渴望），制定简单可行的跑步计划（反应），并在完成后给自己一些奖励（奖励）。
+                            <br><br>
+                            <strong>身份认同的力量</strong><br>
+                            书中最打动我的概念是习惯与身份认同的关系。克利尔认为，真正的行为改变来自身份的改变。例如，与其说"我想戒烟"，不如说"我不是一个吸烟者"。这种身份转变可以使习惯的养成更加自然和持久。
+                            <br><br>
+                            <strong>习惯叠加技术</strong><br>
+                            习惯叠加是指将新习惯与已有习惯连接起来的技术。公式是"在我完成[当前习惯]之后，我会[新习惯]"。例如，"在我刷牙之后，我会冥想5分钟"。这种方法利用了已建立习惯的提示功能，使新习惯更容易坚持。
+                            <br><br>
+                            <strong>个人实践与反思</strong><br>
+                            在过去的一个月里，我尝试应用书中的方法来建立每天阅读30分钟的习惯。我将这个新习惯与我的晚餐习惯叠加："在我晚餐后洗碗之后，我会阅读30分钟"。同时，我也开始将自己视为"一个热爱阅读的人"，这种身份认同帮助我在忙碌的日子里仍然坚持阅读。
+                        </div>
+                        <a href="javascript:void(0)" class="blog-more"
+                            onclick="toggleBlogExpand(this.parentNode)">阅读更多</a>
+                    </article>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination">
+                    <a href="javascript:void(0)" class="active" data-page="1">1</a>
+                    <a href="javascript:void(0)" data-page="2">2</a>
+                </div>
+                </section>
+
+                <div class="demo-section">
+                    <div class="title">
+                        <svg t="1743074102234" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" p-id="1615" width="200" height="200">
+                            <path
+                                d="M773.2224 125.1328H259.3792A133.12 133.12 0 0 0 126.976 258.7648v404.48a133.12 133.12 0 0 0 132.4032 133.12h513.8432a133.12 133.12 0 0 0 132.4032-133.12v-404.48a133.12 133.12 0 0 0-132.4032-133.12zM849.92 666.5216a74.9568 74.9568 0 0 1-74.6496 75.264H257.4336a75.0592 75.0592 0 0 1-74.6496-75.264V255.3856a75.1616 75.1616 0 0 1 74.6496-75.264H775.168a75.0592 75.0592 0 0 1 74.752 75.264z m-152.1664 185.344H333.312a30.72 30.72 0 0 0 0 61.44h364.4416a30.72 30.72 0 0 0 0-61.44z"
+                                p-id="1616"></path>
+                            <path
+                                d="M756.1216 272.0768a28.9792 28.9792 0 0 0-38.4 10.8544L568.4224 545.9968 427.6224 364.2368a28.4672 28.4672 0 0 0-24.9856-10.8544 27.8528 27.8528 0 0 0-22.7328 14.6432L264.192 583.68a26.8288 26.8288 0 0 0 12.288 36.9664 29.5936 29.5936 0 0 0 13.0048 3.072 28.672 28.672 0 0 0 25.1904-14.7456L409.6 431.8208l139.776 180.9408a29.0816 29.0816 0 0 0 24.6784 10.8544 28.16 28.16 0 0 0 22.8352-14.1312L767.2832 309.248a26.8288 26.8288 0 0 0-11.1616-37.1712z"
+                                p-id="1617"></path>
+                        </svg>
+                        博客功能演示
+                    </div>
+
+                    <!-- 图片布局演示 -->
+                    <div class="blog-post blog-collapsed" data-id="114514" data-category="tech">
+                        <div class="blog-title" onclick="toggleBlogExpand(this.parentNode)">图片布局"指北"</div>
+                        <div class="blog-meta">
+                            <span class="blog-date">2025-05-01</span>
+                            <span class="blog-tag">教程</span>
+                            <span class="blog-tag">示例</span>
+                        </div>
+                        <div class="blog-content">
+                            <h3>单图居中显示</h3>
+                            <p>下面是一个居中显示的图片示例：</p>
+
+                            <div class="img-container img-small">
+                                <img src="./static/img/selfie.jpg" alt="居中图片示例" class="img-center">
+                                <div class="img-caption">这是一个居中显示的图片，带有说明文字</div>
+                            </div>
+
+                            <h3>左右浮动图片</h3>
+                            <p>下面是左浮动图片示例：</p>
+                            <img src="./static/img/icon/i1.png" alt="左浮动图片" class="img-left">
+                            <p>这是围绕左浮动图片的文字内容。左浮动图片会使文字环绕在图片的右侧。这种布局适合于在文章开头处放置小图片，并在右侧开始文章内容。</p>
+                            <div class="clearfix"></div>
+
+                            <h3>图片尺寸控制</h3>
+                            <p>您可以使用以下类来控制图片大小：</p>
+
+                            <div class="blog-content-block flex-between margin-vertical">
+                                <div class="img-container img-small margin-horizontal">
+                                    <img src="./static/img/selfie.jpg" alt="小尺寸图片">
+                                    <div class="img-caption">小尺寸图片 (img-small: 30%)</div>
+                                </div>
+
+                                <div class="img-container img-medium margin-horizontal">
+                                    <img src="./static/img/selfie.jpg" alt="中等尺寸图片">
+                                    <div class="img-caption">中等尺寸图片 (img-medium: 50%)</div>
+                                </div>
+                            </div>
+
+                            <blockquote>
+                                尺寸类可以直接应用于图片或图片容器，两种方式效果相同。
+                            </blockquote>
+
+                            <h3>多图网格布局</h3>
+
+                            <p>三列图片（等宽）布局：</p>
+                            <div class="image-grid grid-3">
+                                <img src="./static/img/icon/i1.png" alt="网格图片1">
+                                <img src="./static/img/icon/i2.png" alt="网格图片2">
+                                <img src="./static/img/icon/i5.png" alt="网格图片3">
+                            </div>
+
+                            <h3>使用说明</h3>
+                            <p>要使用这些图片布局功能，只需要按照以下HTML结构：</p>
+                            <pre class="line-numbers"><code class="language-html">&lt;!-- 方式1: 直接在图片上使用尺寸类 --&gt;
+&lt;div class="img-container"&gt;
+    &lt;img src="路径" alt="描述" class="img-small"&gt;
+    &lt;div class="img-caption"&gt;小尺寸图片 (30%)&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 方式2: 在容器上使用尺寸类 --&gt;
+&lt;div class="img-container img-medium"&gt;
+    &lt;img src="路径" alt="描述"&gt;
+    &lt;div class="img-caption"&gt;中等尺寸图片 (50%)&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 图片对齐方式 --&gt;
+&lt;img src="路径" alt="描述" class="img-left img-small"&gt;  &lt;!-- 左浮动小图 --&gt;
+&lt;img src="路径" alt="描述" class="img-right img-small"&gt; &lt;!-- 右浮动小图 --&gt;
+
+&lt;!-- 多图网格 --&gt;
+&lt;div class="image-grid grid-2"&gt;
+    &lt;img src="路径1" alt="描述1"&gt;
+    &lt;img src="路径2" alt="描述2"&gt;
+&lt;/div&gt;</code></pre>
+
+                            <p>所有图片元素都是完全响应式的，会根据不同设备尺寸自动调整：</p>
+                            <ul>
+                                <li>在大屏幕上（>1200px），居中图片将显示为70%宽度</li>
+                                <li>在中等屏幕上（800px-1200px），居中图片将显示为80%宽度</li>
+                                <li>在小屏幕上（800px），浮动图片宽度增加到50% </li>
+                                <li>在移动设备上（600px），所有图片将自动切换为全宽布局 </li>
+                            </ul>
+
+                            <blockquote>图片布局会根据屏幕尺寸自动调整，无需额外编写响应式代码！尝试调整浏览器窗口大小来查看效果。</blockquote>
+                        </div>
+                        <a href="javascript:void(0)" class="blog-more"
+                            onclick="toggleBlogExpand(this.parentNode)">阅读更多</a>
+                    </div>
+                </div>
+
+                <div class="title">
+                    <svg t="1705257823317" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                        xmlns="http://www.w3.org/2000/svg" p-id="7833">
+                        <path
+                            d="M395.765333 586.570667h-171.733333c-22.421333 0-37.888-22.442667-29.909333-43.381334L364.768 95.274667A32 32 0 0 1 394.666667 74.666667h287.957333c22.72 0 38.208 23.018667 29.632 44.064l-99.36 243.882666h187.050667c27.509333 0 42.186667 32.426667 24.042666 53.098667l-458.602666 522.56c-22.293333 25.408-63.626667 3.392-54.976-29.28l85.354666-322.421333zM416.714667 138.666667L270.453333 522.581333h166.869334a32 32 0 0 1 30.933333 40.181334l-61.130667 230.954666 322.176-367.114666H565.312c-22.72 0-38.208-23.018667-29.632-44.064l99.36-243.882667H416.714667z"
+                            p-id="7834"></path>
+                    </svg>
+                    推荐阅读
+                </div>
+
+                <div class="projectList">
+                    <a class="recommendCard" href="https://zh-v2.d2l.ai/">
+                        <div class="recommendCard-img">
+                            <img src="./static/img/background/background1.png" alt="动手学深度学习">
+                            <div class="recommendCard-overlay">
+                                <div class="recommendCard-overlay-title">动手学深度学习</div>
+                            </div>
+                        </div>
+                        <div class="recommendCard-content">
+                            <div class="recommendCard-meta">
+                                <div>
+                                    <span class="recommendCard-tag"># DL</span>
+                                    <span class="recommendCard-tag"># 编程</span>
+                                </div>
+                                <div class="recommendCard-date">2025-01-05</div>
+                            </div>
+                            <div class="recommendCard-desc">新手必读，李沐大神作品，b站还有讲解视频 ~</div>
+                        </div>
+                    </a>
+                    <a class="recommendCard" href="https://www.bilibili.com/video/BV1v64y1Q78o/?p=1">
+                        <div class="recommendCard-img">
+                            <img src="./static/img/background/background3.png" alt="Berkeley CS61A">
+                            <div class="recommendCard-overlay">
+                                <div class="recommendCard-overlay-title">Berkeley CS61A</div>
+                            </div>
+                        </div>
+                        <div class="recommendCard-content">
+                            <div class="recommendCard-meta">
+                                <div>
+                                    <span class="recommendCard-tag"># CS</span>
+                                    <span class="recommendCard-tag"># 编程</span>
+                                </div>
+                                <div class="recommendCard-date">2025-01-02</div>
+                            </div>
+                            <div class="recommendCard-desc">自学 CS 推荐第一课伯克利 CS61A (SP21)</div>
+                        </div>
+                    </a>
+                    <a class="recommendCard" href="https://survivesjtu.gitbook.io/survivesjtumanual">
+                        <div class="recommendCard-img">
+                            <img src="./static/img/background/background4.png" alt="上海交通大学生存手册">
+                            <div class="recommendCard-overlay">
+                                <div class="recommendCard-overlay-title">上海交通大学生存手册</div>
+                            </div>
+                        </div>
+                        <div class="recommendCard-content">
+                            <div class="recommendCard-meta">
+                                <div>
+                                    <span class="recommendCard-tag"># 学习</span>
+                                    <span class="recommendCard-tag"># 大学</span>
+                                </div>
+                                <div class="recommendCard-date">2024-12-28</div>
+                            </div>
+                            <div class="recommendCard-desc">“带给读者一些新鲜的思考，能看到道路上不同的风景。”</div>
+                        </div>
+                    </a>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 尾注 -->
+    <footer>
+        Yizhe Xie &copy; 2025 | ID: 23160151
+    </footer>
+
+    <script src="./static/js/script.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/toolbar/prism-toolbar.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+</body>
+
+</html>
